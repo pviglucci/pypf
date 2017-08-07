@@ -5,42 +5,55 @@ from chart import PFChart
 from instrument import Security
 import logging
 
+
 def get_option_parser():
     parser = ArgumentParser()
     parser.add_argument("-v", "--verbose",
-                        action="store_const", const=logging.INFO, dest="verbosity",
+                        action="store_const",
+                        const=logging.INFO, dest="verbosity",
                         help="increase status messages to stdout")
     parser.add_argument("--force-cache",
-                       action="store_true", dest="force_cache",
-                       help="use cached data [default: False]")
+                        action="store_true", dest="force_cache",
+                        help="use cached data [default: False]")
     parser.add_argument("--force-download",
-                           action="store_true", dest="force_download",
-                           help="force download data and update cache [default: False]")
+                        action="store_true", dest="force_download",
+                        help="force download data [default: False]")
 
     # Top level commands
-    subparsers = parser.add_subparsers(help='description', metavar="command", dest='command')
+    subparsers = parser.add_subparsers(help='description',
+                                       metavar="command",
+                                       dest='command')
     subparsers.required = True
-    pf_parser = subparsers.add_parser('pf', help='create point and figure charts')
+    pf_parser = subparsers.add_parser('pf',
+                                      help='create point and figure charts')
 
     pf_parser.add_argument("--pf-box-size",
-                       action="store", dest="pf_box_size", type=float, default=.01,
-                       metavar="SIZE",
-                       help='set the point and figure %% box size [default: %(default)s]')
+                           action="store", dest="pf_box_size",
+                           type=float, default=.01,
+                           metavar="SIZE",
+                           help='set the %% box size [default: %(default)s]')
     pf_parser.add_argument("--pf-method",
-                           action="store", dest="pf_chart_method", choices=['HL', 'C'], default='HL',
+                           action="store",
+                           dest="pf_chart_method",
+                           choices=['HL', 'C'], default='HL',
                            metavar="METHOD",
-                           help="specify High/Low (HL) or Close (C) chart method [default: %(default)s]")
+                           help="specify High/Low (HL) or Close (C) \
+                                 [default: %(default)s]")
     pf_parser.add_argument("--pf-period",
-                           action="store", dest="pf_period", type=float, default=1,
+                           action="store", dest="pf_period",
+                           type=float, default=1,
                            metavar="PERIOD",
-                           help="set the point and figure period [default: %(default)s]")
+                           help="set the period [default: %(default)s]")
     pf_parser.add_argument("--pf-reversal",
-                           action="store", dest="pf_reversal", type=int, default=3,
+                           action="store", dest="pf_reversal",
+                           type=int, default=3,
                            metavar="REVERSAL",
-                           help="set the point and figure %% move that triggers a reversal [default: %(default)s]")
-    pf_parser.add_argument("symbol", metavar='SYMBOL', help='the symbol of the security to chart')
+                           help="set the %% reversal [default: %(default)s]")
+    pf_parser.add_argument("symbol", metavar='SYMBOL',
+                           help='the symbol of the security to chart')
 
     return parser
+
 
 def process_options(options):
     for option in vars(options):
@@ -59,10 +72,13 @@ def process_options(options):
     chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method)
     chart.create_chart(dump=True)
 
+
 def main():
     parser = get_option_parser()
     options = parser.parse_args()
-    logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=options.verbosity)
+    logging.basicConfig(format='[%(asctime)s] %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=options.verbosity)
     process_options(options)
 
 if __name__ == "__main__":

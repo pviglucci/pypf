@@ -1,21 +1,29 @@
-from abc import ABCMeta, abstractmethod
+"""This is the docstring."""
+from abc import ABCMeta
+from abc import abstractmethod
 from collections import OrderedDict
 from decimal import Decimal
 from pandas_datareader._utils import RemoteDataError
+
 import csv
 import datetime
 import logging
-import pandas_datareader.data as web
 import os
+import pandas_datareader.data as web
 
 
 class Instrument(metaclass=ABCMeta):
+    """Base class for all Instruments."""
+
+    # TODO(me) Add properties to access attributes.
     def __init__(self, symbol, force=False, cache=False, period=5):
+        """Initialize the common functionality for all Instruments."""
         now = datetime.datetime.now()
         self.home_directory = '.'
         self.historical_directory = os.path.join(self.home_directory, 'data')
         self.symbol = symbol.lower().replace('.', '-')
-        self.symbol_file = os.path.join(self.historical_directory, self.symbol + '.csv')
+        self.symbol_file = os.path.join(self.historical_directory,
+                                        self.symbol + '.csv')
         self.month = now.month
         self.day = now.day
         self.to_year = now.year
@@ -25,6 +33,14 @@ class Instrument(metaclass=ABCMeta):
         self.cache = cache
 
     def populate_data(self):
+        """Populate the instrument with data.
+
+        Data will only be downloaded if the data file doesn't exist or
+        if the modification time of the file does not equal the current
+        date. This behavior can be overridden with the --force-cache
+        and --force-download options.
+        """
+        # TODO(me): Refactor without using exceptions.
         download_data = False
 
         if self.force:
@@ -32,7 +48,8 @@ class Instrument(metaclass=ABCMeta):
         else:
             if os.path.isfile(self.symbol_file):
                 modification_time = os.path.getmtime(self.symbol_file)
-                last_modified_date = datetime.date.fromtimestamp(modification_time)
+                last_modified_date = (datetime.date
+                                      .fromtimestamp(modification_time))
                 today = datetime.datetime.now().date()
 
                 if last_modified_date != today:
@@ -46,9 +63,9 @@ class Instrument(metaclass=ABCMeta):
         if download_data:
             logging.info('downloading historical data for ' + self.symbol)
             try:
-                self.download_data()
+                self.__download_data()
             except RemoteDataError:
-                logging.info('unable to download historical data for ' + self.symbol)
+                logging.info('unable to download data for ' + self.symbol)
                 raise
             csv_file = open(self.symbol_file, newline='')
         else:
@@ -72,17 +89,31 @@ class Instrument(metaclass=ABCMeta):
 
     @abstractmethod
     def download_data(self):
+        """To be implemented in derived classes.
+
+        Data must be stored in a csv file that follows the Yahoo format, which
+        includes an Adjusted Close field. If the data is already Adjusted
+        then include Adjusted Close field that equals the Close field.
+        """
         pass
 
 
 class Security(Instrument):
+    """Security instrument that uses Yahoo as the datasource."""
+
     def __init__(self, symbol, force=False, cache=False, period=5):
+        """Initialize the security.
+
+        Use the force and cache options to set download behavior.
+        """
         super().__init__(symbol, force, cache, period)
 
     def __str__(self):
+        """Return the symbol of the security."""
         return self.symbol
 
     def download_data(self):
+        """Download data and save to a csv file."""
         start = datetime.datetime(self.from_year, self.month, self.day)
         end = datetime.datetime(self.to_year, self.month, self.day)
         h = web.DataReader(self.symbol, 'yahoo', start, end)

@@ -1,9 +1,12 @@
-import os
-import urllib.request
+"""This is the docstring."""
+# TODO(me): Refactor this file to be a generic download manager
+# from instrument import Security
+from schema import TradeMeta
+
 import datetime
 import logging
-from schema import TradeMeta
-#from instrument import Security
+import os
+import urllib.request
 
 
 class DownloadError(Exception):
@@ -38,19 +41,12 @@ class DataManager(TradeMeta):
                     pass
 
     def download_symbol(self, security):
-        symbol_file = security.symbol_file
-        url_base = 'http://ichart.finance.yahoo.com/table.csv?s={0}&a={1}&b={2}&c={3}&d={4}&e={5}&f={6}&g=d&ignore=.csv'
-        url = url_base.format(security.symbol, self.month, self.day, self.from_year, self.month, self.day, self.to_year)
-        logging.info('downloading ' + security.symbol)
-        try:
-            urllib.request.urlretrieve(url, symbol_file)
-        except urllib.request.ContentTooShortError:
-            logging.warning('failed to download ' + security.symbol)
-            return False
-        return True
+        # rewrite using new Yahoo API
+        pass
 
     def download_data(self):
-        logging.warning('downloading historical data to ' + self.historical_directory)
+        logging.warning('downloading historical data to '
+                        + self.historical_directory)
         self.delete_historical_data()
 
         failures = []

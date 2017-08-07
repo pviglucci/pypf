@@ -1,8 +1,12 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
+from abc import abstractmethod
 from collections import OrderedDict
-from decimal import Decimal
-from terminal_format import red, bold, underline
 from datetime import datetime
+from decimal import Decimal
+from terminal_format import bold
+from terminal_format import red
+from terminal_format import underline
+
 
 class InsufficientDataError(Exception):
     def __init__(self, value):
@@ -98,8 +102,9 @@ class PFChartBase(metaclass=ABCMeta):
             status = 'none'
         return status
 
-    def store_base_metadata(self, day, signal, status, action, move, column_index, scale_index, scale_value, direction,
-                            prior_high, prior_low):
+    def store_base_metadata(self, day, signal, status, action, move,
+                            column_index, scale_index, scale_value,
+                            direction, prior_high, prior_low):
         date_value = day['Date']
         self.chart_meta_data[date_value] = {}
         self.chart_meta_data[date_value]['signal'] = signal
@@ -135,7 +140,8 @@ class PFChartBase(metaclass=ABCMeta):
             current_month = self.get_month(day[self.date_field])
 
             if index is None:
-                # First day - set the starting index based on the high and 'x' direction
+                # First day - set the starting index based
+                # on the high and 'x' direction
                 index = self.get_scale_index(day[self.high_field], 'x')
                 column[index] = ['x', day[self.date_field]]
                 month = current_month
@@ -157,7 +163,8 @@ class PFChartBase(metaclass=ABCMeta):
                         index += 1
                         if first:
                             if current_month != month:
-                                column[index] = [current_month, day[self.date_field]]
+                                column[index] = [current_month,
+                                                 day[self.date_field]]
                             else:
                                 column[index] = ['x', day[self.date_field]]
                             first = False
@@ -166,7 +173,8 @@ class PFChartBase(metaclass=ABCMeta):
                     month = current_month
                 else:
                     # check for reversal
-                    scale_index = self.get_scale_index(day[self.low_field], 'o')
+                    scale_index = self.get_scale_index(day[self.low_field],
+                                                       'o')
                     if index - scale_index >= self.reversal:
                         # reversal
                         action = 'reverse x->o'
@@ -185,7 +193,8 @@ class PFChartBase(metaclass=ABCMeta):
                             index -= 1
                             if first:
                                 if current_month != month:
-                                    column[index] = [current_month, day[self.date_field]]
+                                    column[index] = [current_month,
+                                                     day[self.date_field]]
                                 else:
                                     column[index] = ['d', day[self.date_field]]
                                 first = False
@@ -211,7 +220,8 @@ class PFChartBase(metaclass=ABCMeta):
                         index -= 1
                         if first:
                             if current_month != month:
-                                column[index] = [current_month, day[self.date_field]]
+                                column[index] = [current_month,
+                                                 day[self.date_field]]
                             else:
                                 column[index] = ['o', day[self.date_field]]
                             first = False
@@ -220,7 +230,8 @@ class PFChartBase(metaclass=ABCMeta):
                     month = current_month
                 else:
                     # check for reversal
-                    scale_index = self.get_scale_index(day[self.high_field], 'x')
+                    scale_index = self.get_scale_index(day[self.high_field],
+                                                       'x')
                     if scale_index - index >= self.reversal:
                         # reversal
                         action = 'reverse o->x'
@@ -239,7 +250,8 @@ class PFChartBase(metaclass=ABCMeta):
                             index += 1
                             if first:
                                 if current_month != month:
-                                    column[index] = [current_month, day[self.date_field]]
+                                    column[index] = [current_month,
+                                                     day[self.date_field]]
                                 else:
                                     column[index] = ['u', day[self.date_field]]
                                 first = False
@@ -252,12 +264,13 @@ class PFChartBase(metaclass=ABCMeta):
 
             # Store the meta data for the day
             status = self.get_status(signal, direction)
-            scale_value = self.scale[scale_index].quantize(PFChartBase.TWOPLACES)
+            scale_value = (self.scale[scale_index]
+                           .quantize(PFChartBase.TWOPLACES))
             prior_high = self.scale[prior_high_index]
             prior_low = self.scale[prior_low_index]
-            self.store_base_metadata(day, signal, status, action, move, column_index, scale_index, scale_value,
+            self.store_base_metadata(day, signal, status, action, move,
+                                     column_index, scale_index, scale_value,
                                      direction, prior_high, prior_low)
-
 
         self.chart_data.append(column)
 
@@ -274,11 +287,6 @@ class PFChartBase(metaclass=ABCMeta):
         if dump:
             chart = self.get_chart()
             print(chart)
-            # for day in self.chart_meta_data:
-            # meta = self.chart_meta_data[day]
-            # print(day + ',' + meta['signal'] + ',' + meta['status'] + ',' + str(meta['bp_close']) +
-            #       ',' + str(meta['spdr_open']) + ',' + str(meta['spdr_close'])+ ',' + str(meta['prior_high'])+
-            #       ',' + str(meta['prior_low']))
 
     def set_current_state(self):
         current_meta_index = next(reversed(self.chart_meta_data))
@@ -307,8 +315,11 @@ class PFChartBase(metaclass=ABCMeta):
                     if first:
                         scale_value = column[index]
                         if index == self.current_scale_index:
-                            scale_left = red(bold('{:7.2f}'.format(scale_value)))
-                            scale_right = red(bold('<< ')) + red(bold('{:.2f}'.format(self.current_close)))
+                            scale_left = (red(bold('{:7.2f}'
+                                          .format(scale_value))))
+                            scale_right = (red(bold('<< '))
+                                           + red(bold('{:.2f}'
+                                                 .format(self.current_close))))
                         else:
                             scale_left = '{:7.2f}'.format(scale_value)
                             scale_right = '{:.2f}'.format(scale_value)
@@ -327,7 +338,8 @@ class PFChartBase(metaclass=ABCMeta):
 
 
 class PFChart(PFChartBase):
-    def __init__(self, security, period=1, box_size=.01, reversal=3, method='HL'):
+    def __init__(self, security, period=1,
+                 box_size=.01, reversal=3, method='HL'):
         super().__init__(period, box_size, reversal)
         self.security = security
         self.method = method
@@ -404,24 +416,37 @@ class PFChart(PFChartBase):
         day = next(reversed(self.historical_data))
         current_day = self.historical_data[day]
         self.current_date = current_day[self.date_field]
-        self.current_open = current_day[self.open_field].quantize(PFChartBase.TWOPLACES)
-        self.current_high = current_day[self.high_field].quantize(PFChartBase.TWOPLACES)
-        self.current_low = current_day[self.low_field].quantize(PFChartBase.TWOPLACES)
-        self.current_close = current_day[self.close_field].quantize(PFChartBase.TWOPLACES)
+        self.current_open = (current_day[self.open_field]
+                             .quantize(PFChartBase.TWOPLACES))
+        self.current_high = (current_day[self.high_field]
+                             .quantize(PFChartBase.TWOPLACES))
+        self.current_low = (current_day[self.low_field]
+                            .quantize(PFChartBase.TWOPLACES))
+        self.current_close = (current_day[self.close_field]
+                              .quantize(PFChartBase.TWOPLACES))
 
     def get_chart_title(self):
         self.set_current_prices()
         title = ""
         title = title + "  " + bold(underline(self.security.symbol))
-        title = title + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}".format(self.current_date,
-                                                                                self.current_open,
-                                                                                self.current_high,
-                                                                                self.current_low,
-                                                                                self.current_close) + ")\n"
-        title = title + "  " + str((self.box_size * 100).quantize(PFChartBase.TWOPLACES)) + "% box, "
+        title = (title
+                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
+                 .format(self.current_date, self.current_open,
+                         self.current_high, self.current_low,
+                         self.current_close)
+                 + ")\n")
+
+        title = (title
+                 + "  "
+                 + str((self.box_size * 100).quantize(PFChartBase.TWOPLACES))
+                 + "% box, ")
         title = title + str(self.reversal) + " box reversal, "
         title = title + str(self.method) + " method\n"
-        title = title + "  signal: " + bold(self.current_signal) + " status: " + bold(self.current_status) + "\n\n"
+        title = (title
+                 + "  signal: "
+                 + bold(self.current_signal)
+                 + " status: " + bold(self.current_status)
+                 + "\n\n")
         return title
 
     def store_custom_metadata(self, date_value):
