@@ -6,6 +6,16 @@ from instrument import Security
 import logging
 
 
+def main():
+    """Program entry."""
+    parser = __get_option_parser()
+    options = parser.parse_args()
+    logging.basicConfig(format='[%(asctime)s] %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        level=options.verbosity)
+    __process_options(options)
+
+
 def __get_option_parser():
     parser = ArgumentParser()
     parser.add_argument("-v", "--verbose",
@@ -72,15 +82,6 @@ def __process_options(options):
     chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method)
     chart.create_chart(dump=True)
 
-
-def main():
-    """Program entry."""
-    parser = __get_option_parser()
-    options = parser.parse_args()
-    logging.basicConfig(format='[%(asctime)s] %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S',
-                        level=options.verbosity)
-    __process_options(options)
 
 if __name__ == "__main__":
     main()
