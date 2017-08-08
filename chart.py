@@ -9,14 +9,6 @@ from terminal_format import red
 from terminal_format import underline
 
 
-# class InsufficientDataError(Exception):
-#     def __init__(self, value):
-#         self.value = value
-#
-#     def __str__(self):
-#         return repr(self.value)
-
-
 class PFChartBase(metaclass=ABCMeta):
     """Base class for point and figure charts."""
 
