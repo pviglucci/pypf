@@ -40,37 +40,51 @@ class PFChartBase(metaclass=ABCMeta):
 
         self.chart_meta_data = OrderedDict()
 
-    @abstractmethod
-    def _set_historical_data(self):
-        pass
+    def create_chart(self, dump=False):
+        """Populate the data and create the chart."""
+        self._set_historical_data()
+        self._set_price_fields()
+        self._set_scale()
+        self._set_chart_data()
+        if dump:
+            chart = self._get_chart()
+            print(chart)
 
-    @abstractmethod
-    def _set_price_fields(self):
-        pass
+    def _get_chart(self):
+        self._set_current_state()
+        chart = ""
+        chart += "\n"
+        chart += self._get_chart_title()
 
-    @abstractmethod
-    def _set_scale(self):
-        pass
+        index = len(self.chart_data[0]) - 1
+        first = True
+        scale_right = None
+        while index >= 0:
+            for column in self.chart_data:
+                if index in column:
+                    if first:
+                        scale_value = column[index]
+                        if index == self.current_scale_index:
+                            scale_left = (red(bold('{:7.2f}'
+                                          .format(scale_value))))
+                            scale_right = (red(bold('<< '))
+                                           + red(bold('{:.2f}'
+                                                 .format(self.current_close))))
+                        else:
+                            scale_left = '{:7.2f}'.format(scale_value)
+                            scale_right = '{:.2f}'.format(scale_value)
+                        chart = chart + scale_left + '| '
+                        first = False
+                    else:
+                        chart = chart + ' ' + column[index][0]
+                else:
+                    chart += '  '
 
-    @abstractmethod
-    def _get_chart_title(self):
-        pass
-
-    @abstractmethod
-    def _store_custom_metadata(self, day):
-        pass
-
-    @staticmethod
-    def _get_month(date_value):
-        datetime_object = datetime.strptime(date_value, '%Y-%m-%d')
-        month = str(datetime_object.month)
-        if month == '10':
-            month = 'A'
-        elif month == '11':
-            month = 'B'
-        elif month == '12':
-            month = 'C'
-        return bold(red(month))
+            chart += '   |' + scale_right
+            chart += "\n"
+            index -= 1
+            first = True
+        return chart
 
     def _get_scale_index(self, value, direction):
         index = 0
@@ -83,37 +97,6 @@ class PFChartBase(metaclass=ABCMeta):
                 else:
                     return index
             index += 1
-
-    @staticmethod
-    def _get_status(signal, direction):
-        if signal == 'buy' and direction == 'x':
-            status = 'bull confirmed'
-        elif signal == 'buy' and direction == 'o':
-            status = 'bull correction'
-        elif signal == 'sell' and direction == 'o':
-            status = 'bear confirmed'
-        elif signal == 'sell' and direction == 'x':
-            status = 'bear correction'
-        else:
-            status = 'none'
-        return status
-
-    def _store_base_metadata(self, day, signal, status, action, move,
-                             column_index, scale_index, scale_value,
-                             direction, prior_high, prior_low):
-        date_value = day['Date']
-        self.chart_meta_data[date_value] = {}
-        self.chart_meta_data[date_value]['signal'] = signal
-        self.chart_meta_data[date_value]['status'] = status
-        self.chart_meta_data[date_value]['action'] = action
-        self.chart_meta_data[date_value]['move'] = move
-        self.chart_meta_data[date_value]['column_index'] = column_index
-        self.chart_meta_data[date_value]['scale_index'] = scale_index
-        self.chart_meta_data[date_value]['scale_value'] = scale_value
-        self.chart_meta_data[date_value]['direction'] = direction
-        self.chart_meta_data[date_value]['prior_high'] = prior_high
-        self.chart_meta_data[date_value]['prior_low'] = prior_low
-        self._store_custom_metadata(day)
 
     def _set_chart_data(self):
         self.chart_data = []
@@ -275,16 +258,6 @@ class PFChartBase(metaclass=ABCMeta):
 
         return self.chart_data
 
-    def create_chart(self, dump=False):
-        """Populate the data and create the chart."""
-        self._set_historical_data()
-        self._set_price_fields()
-        self._set_scale()
-        self._set_chart_data()
-        if dump:
-            chart = self._get_chart()
-            print(chart)
-
     def _set_current_state(self):
         current_meta_index = next(reversed(self.chart_meta_data))
         current_meta = self.chart_meta_data[current_meta_index]
@@ -297,41 +270,68 @@ class PFChartBase(metaclass=ABCMeta):
         self.current_scale_value = current_meta['scale_value']
         self.current_direction = current_meta['direction']
 
-    def _get_chart(self):
-        self._set_current_state()
-        chart = ""
-        chart += "\n"
-        chart += self._get_chart_title()
+    def _store_base_metadata(self, day, signal, status, action, move,
+                             column_index, scale_index, scale_value,
+                             direction, prior_high, prior_low):
+        date_value = day['Date']
+        self.chart_meta_data[date_value] = {}
+        self.chart_meta_data[date_value]['signal'] = signal
+        self.chart_meta_data[date_value]['status'] = status
+        self.chart_meta_data[date_value]['action'] = action
+        self.chart_meta_data[date_value]['move'] = move
+        self.chart_meta_data[date_value]['column_index'] = column_index
+        self.chart_meta_data[date_value]['scale_index'] = scale_index
+        self.chart_meta_data[date_value]['scale_value'] = scale_value
+        self.chart_meta_data[date_value]['direction'] = direction
+        self.chart_meta_data[date_value]['prior_high'] = prior_high
+        self.chart_meta_data[date_value]['prior_low'] = prior_low
+        self._store_custom_metadata(day)
 
-        index = len(self.chart_data[0]) - 1
-        first = True
-        scale_right = None
-        while index >= 0:
-            for column in self.chart_data:
-                if index in column:
-                    if first:
-                        scale_value = column[index]
-                        if index == self.current_scale_index:
-                            scale_left = (red(bold('{:7.2f}'
-                                          .format(scale_value))))
-                            scale_right = (red(bold('<< '))
-                                           + red(bold('{:.2f}'
-                                                 .format(self.current_close))))
-                        else:
-                            scale_left = '{:7.2f}'.format(scale_value)
-                            scale_right = '{:.2f}'.format(scale_value)
-                        chart = chart + scale_left + '| '
-                        first = False
-                    else:
-                        chart = chart + ' ' + column[index][0]
-                else:
-                    chart += '  '
+    @staticmethod
+    def _get_month(date_value):
+        datetime_object = datetime.strptime(date_value, '%Y-%m-%d')
+        month = str(datetime_object.month)
+        if month == '10':
+            month = 'A'
+        elif month == '11':
+            month = 'B'
+        elif month == '12':
+            month = 'C'
+        return bold(red(month))
 
-            chart += '   |' + scale_right
-            chart += "\n"
-            index -= 1
-            first = True
-        return chart
+    @staticmethod
+    def _get_status(signal, direction):
+        if signal == 'buy' and direction == 'x':
+            status = 'bull confirmed'
+        elif signal == 'buy' and direction == 'o':
+            status = 'bull correction'
+        elif signal == 'sell' and direction == 'o':
+            status = 'bear confirmed'
+        elif signal == 'sell' and direction == 'x':
+            status = 'bear correction'
+        else:
+            status = 'none'
+        return status
+
+    @abstractmethod
+    def _get_chart_title(self):
+        pass
+
+    @abstractmethod
+    def _set_historical_data(self):
+        pass
+
+    @abstractmethod
+    def _set_price_fields(self):
+        pass
+
+    @abstractmethod
+    def _set_scale(self):
+        pass
+
+    @abstractmethod
+    def _store_custom_metadata(self, day):
+        pass
 
 
 class PFChart(PFChartBase):
@@ -352,17 +352,42 @@ class PFChart(PFChartBase):
         self.open_field = None
         self.volume_field = None
 
-    def _set_price_fields(self):
-        if self.method == 'HL':
-            self.high_field = 'High'
-            self.low_field = 'Low'
-        else:
-            self.high_field = 'Close'
-            self.low_field = 'Close'
-        self.open_field = 'Open'
-        self.close_field = 'Close'
-        self.volume_field = 'Volume'
-        self.date_field = 'Date'
+    def _get_chart_title(self):
+        self._set_current_prices()
+        title = ""
+        title = title + "  " + bold(underline(self.security.symbol))
+        title = (title
+                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
+                 .format(self.current_date, self.current_open,
+                         self.current_high, self.current_low,
+                         self.current_close)
+                 + ")\n")
+
+        title = (title
+                 + "  "
+                 + str((self.box_size * 100).quantize(PFChartBase.TWOPLACES))
+                 + "% box, ")
+        title = title + str(self.reversal) + " box reversal, "
+        title = title + str(self.method) + " method\n"
+        title = (title
+                 + "  signal: "
+                 + bold(self.current_signal)
+                 + " status: " + bold(self.current_status)
+                 + "\n\n")
+        return title
+
+    def _set_current_prices(self):
+        day = next(reversed(self.historical_data))
+        current_day = self.historical_data[day]
+        self.current_date = current_day[self.date_field]
+        self.current_open = (current_day[self.open_field]
+                             .quantize(PFChartBase.TWOPLACES))
+        self.current_high = (current_day[self.high_field]
+                             .quantize(PFChartBase.TWOPLACES))
+        self.current_low = (current_day[self.low_field]
+                            .quantize(PFChartBase.TWOPLACES))
+        self.current_close = (current_day[self.close_field]
+                              .quantize(PFChartBase.TWOPLACES))
 
     def _set_historical_data(self):
         if len(self.security.historical_data) == 0:
@@ -378,6 +403,18 @@ class PFChart(PFChartBase):
             self.historical_data = self.security.historical_data
         else:
             self.historical_data = self.security.historical_data
+
+    def _set_price_fields(self):
+        if self.method == 'HL':
+            self.high_field = 'High'
+            self.low_field = 'Low'
+        else:
+            self.high_field = 'Close'
+            self.low_field = 'Close'
+        self.open_field = 'Open'
+        self.close_field = 'Close'
+        self.volume_field = 'Volume'
+        self.date_field = 'Date'
 
     def _set_scale(self):
         row = next(iter(self.historical_data))
@@ -411,43 +448,6 @@ class PFChart(PFChartBase):
         self.scale = OrderedDict()
         for index, scale_value in enumerate(temp_scale):
             self.scale[index] = scale_value
-
-    def _set_current_prices(self):
-        day = next(reversed(self.historical_data))
-        current_day = self.historical_data[day]
-        self.current_date = current_day[self.date_field]
-        self.current_open = (current_day[self.open_field]
-                             .quantize(PFChartBase.TWOPLACES))
-        self.current_high = (current_day[self.high_field]
-                             .quantize(PFChartBase.TWOPLACES))
-        self.current_low = (current_day[self.low_field]
-                            .quantize(PFChartBase.TWOPLACES))
-        self.current_close = (current_day[self.close_field]
-                              .quantize(PFChartBase.TWOPLACES))
-
-    def _get_chart_title(self):
-        self._set_current_prices()
-        title = ""
-        title = title + "  " + bold(underline(self.security.symbol))
-        title = (title
-                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
-                 .format(self.current_date, self.current_open,
-                         self.current_high, self.current_low,
-                         self.current_close)
-                 + ")\n")
-
-        title = (title
-                 + "  "
-                 + str((self.box_size * 100).quantize(PFChartBase.TWOPLACES))
-                 + "% box, ")
-        title = title + str(self.reversal) + " box reversal, "
-        title = title + str(self.method) + " method\n"
-        title = (title
-                 + "  signal: "
-                 + bold(self.current_signal)
-                 + " status: " + bold(self.current_status)
-                 + "\n\n")
-        return title
 
     def _store_custom_metadata(self, date_value):
         pass
