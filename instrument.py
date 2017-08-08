@@ -1,4 +1,4 @@
-"""This is the docstring."""
+"""Classes to represent financial instruments."""
 from abc import ABCMeta
 from abc import abstractmethod
 from collections import OrderedDict
@@ -63,7 +63,7 @@ class Instrument(metaclass=ABCMeta):
         if download_data:
             logging.info('downloading historical data for ' + self.symbol)
             try:
-                self.__download_data()
+                self._download_data()
             except RemoteDataError:
                 logging.info('unable to download data for ' + self.symbol)
                 raise
@@ -88,7 +88,7 @@ class Instrument(metaclass=ABCMeta):
             self.historical_data[row['Date']] = row
 
     @abstractmethod
-    def download_data(self):
+    def _download_data(self):
         """To be implemented in derived classes.
 
         Data must be stored in a csv file that follows the Yahoo format, which
@@ -112,8 +112,7 @@ class Security(Instrument):
         """Return the symbol of the security."""
         return self.symbol
 
-    def download_data(self):
-        """Download data and save to a csv file."""
+    def _download_data(self):
         start = datetime.datetime(self.from_year, self.month, self.day)
         end = datetime.datetime(self.to_year, self.month, self.day)
         h = web.DataReader(self.symbol, 'yahoo', start, end)

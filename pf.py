@@ -1,12 +1,12 @@
 #!/Library/Frameworks/Python.framework/Versions/3.6/bin/python3
-
+"""This is the docstring."""
 from argparse import ArgumentParser
 from chart import PFChart
 from instrument import Security
 import logging
 
 
-def get_option_parser():
+def __get_option_parser():
     parser = ArgumentParser()
     parser.add_argument("-v", "--verbose",
                         action="store_const",
@@ -55,7 +55,7 @@ def get_option_parser():
     return parser
 
 
-def process_options(options):
+def __process_options(options):
     for option in vars(options):
         logging.info(option + ': ' + str(vars(options)[option]))
 
@@ -74,12 +74,13 @@ def process_options(options):
 
 
 def main():
-    parser = get_option_parser()
+    """Program entry."""
+    parser = __get_option_parser()
     options = parser.parse_args()
     logging.basicConfig(format='[%(asctime)s] %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
                         level=options.verbosity)
-    process_options(options)
+    __process_options(options)
 
 if __name__ == "__main__":
     main()
