@@ -19,7 +19,7 @@ class Instrument(metaclass=ABCMeta):
     def __init__(self, symbol, force=False, cache=False, period=5):
         """Initialize the common functionality for all Instruments."""
         now = datetime.datetime.now()
-        self.home_directory = '.'
+        self.home_directory = '..'
         self.historical_directory = os.path.join(self.home_directory, 'data')
         self.symbol = symbol.lower().replace('.', '-')
         self.symbol_file = os.path.join(self.historical_directory,

@@ -2,3 +2,11 @@ data/
 __pycache__/
 .DS_Store
 .tags*
+# Compiled python modules.
+*.pyc
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
