@@ -4,9 +4,9 @@ from abc import abstractmethod
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
-from terminal_format import bold
-from terminal_format import red
-from terminal_format import underline
+from pypf.terminal_format import bold
+from pypf.terminal_format import red
+from pypf.terminal_format import underline
 
 
 class PFChartBase(metaclass=ABCMeta):

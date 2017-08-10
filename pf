@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """This is the docstring."""
 from argparse import ArgumentParser
-from chart import PFChart
-from instrument import Security
+from pypf.chart import PFChart
+from pypf.instrument import Security
+
 import logging
 
 

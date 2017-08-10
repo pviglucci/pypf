@@ -23,8 +23,6 @@ setup(name='pypf',
       license='MIT',
       packages=['pypf'],
       install_requires=['pandas-datareader', ],
-      entry_points={
-          'console_scripts': ['pypf=pypf.pypf:main'],
-          },
+      scripts=['pf'],
       include_package_data=True,
       zip_safe=False)
