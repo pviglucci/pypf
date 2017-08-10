@@ -19,8 +19,12 @@ class Instrument(metaclass=ABCMeta):
     def __init__(self, symbol, force=False, cache=False, period=5):
         """Initialize the common functionality for all Instruments."""
         now = datetime.datetime.now()
-        self.home_directory = '..'
+        self.home_directory = os.path.expanduser('~/.pypf')
         self.historical_directory = os.path.join(self.home_directory, 'data')
+        if os.path.isdir(self.historical_directory) is False:
+            logging.info('creating data directory '
+                         + self.historical_directory)
+            os.makedirs(self.historical_directory)
         self.symbol = symbol.lower().replace('.', '-')
         self.symbol_file = os.path.join(self.historical_directory,
                                         self.symbol + '.csv')
