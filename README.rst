@@ -3,5 +3,8 @@ pypf
 
 To use (with caution), simply do::
 
-    >>> import funniest
-    >>> print funniest.joke()
+    >>> from pypf.chart import PFChart
+    >>> from pypf.instrument import Security
+    >>> security = Security(symbol, force_download, force_cache)
+    >>> chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method)
+    >>> chart.create_chart(dump=True)

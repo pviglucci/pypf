@@ -7,14 +7,14 @@ def _readme():
         return f.read()
 
 setup(name='pypf',
-      version='0.1',
+      version='0.9',
       description='Create point and figure charts',
       long_description=_readme(),
       classifiers=[
                   'Development Status :: 3 - Alpha',
                   'License :: OSI Approved :: MIT License',
-                  'Programming Language :: Python :: 2.7',
-                  'Topic :: Text Processing :: Linguistic',
+                  'Programming Language :: Python :: 3.6',
+                  'Topic :: Office/Business :: Financial :: Investment',
       ],
       keywords='point figure stock chart',
       url='http://github.com/pviglucci/pypf',
