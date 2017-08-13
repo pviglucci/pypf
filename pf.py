@@ -7,6 +7,7 @@ from pypf.instrument import Security
 import logging
 # TODO(me): Make colored output an option
 
+
 def main():
     """Program entry."""
     parser = __get_option_parser()
