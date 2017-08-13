@@ -13,6 +13,7 @@ import sys
 if sys.platform is not 'ios':
     # ugly hack but it let's us develop on ios.
     # the cython parts of pandas are not supported and will break on import.
+    print(sys.platform)
     from pandas_datareader._utils import RemoteDataError
     import pandas_datareader.data as web
 
