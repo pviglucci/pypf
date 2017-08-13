@@ -3,7 +3,6 @@ from abc import ABCMeta
 from abc import abstractmethod
 from collections import OrderedDict
 from decimal import Decimal
-from pandas_datareader._utils import RemoteDataError
 
 import csv
 import datetime
@@ -14,6 +13,7 @@ import sys
 if sys.platform is not 'ios':
     # ugly hack but it let's us develop on ios.
     # the cython parts of pandas are not supported and will break on import.
+    from pandas_datareader._utils import RemoteDataError
     import pandas_datareader.data as web
 
 
@@ -77,7 +77,8 @@ class Instrument(metaclass=ABCMeta):
             logging.info('downloading historical data for ' + self.symbol)
             try:
                 self._download_data()
-            except RemoteDataError:
+            except Exception:
+                # should be RemoteDataError
                 logging.info('unable to download data for ' + self.symbol)
                 raise
             csv_file = open(self.symbol_file, newline='')
