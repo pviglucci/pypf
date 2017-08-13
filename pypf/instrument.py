@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 
-if sys.platform is not 'ios':
+if sys.platform != 'ios':
     # ugly hack but it let's us develop on ios.
     # the cython parts of pandas are not supported and will break on import.
     print(sys.platform)
@@ -43,7 +43,7 @@ class Instrument(metaclass=ABCMeta):
         self.cache = cache
         # force the use of cache on ios since pandas is not supported.
         # this will prevent _download_data from being called.
-        if sys.platform is 'ios':
+        if sys.platform == 'ios':
             self.cache = True
 
     def populate_data(self):
