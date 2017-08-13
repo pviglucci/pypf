@@ -8,17 +8,19 @@ from pypf.terminal_format import bold
 from pypf.terminal_format import red
 from pypf.terminal_format import underline
 
+import pypf.terminal_format
 
 class PFChartBase(metaclass=ABCMeta):
     """Base class for point and figure charts."""
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, period=1, box_size=.01, reversal=3):
+    def __init__(self, period=1, box_size=.01, reversal=3, style_output=False):
         """Initialize common functionality."""
         self.period = period
         self.box_size = Decimal(box_size)
         self.reversal = int(reversal)
+        self.style_output = style_output
 
         self.historical_data = []
         self.chart_data = []
@@ -65,11 +67,11 @@ class PFChartBase(metaclass=ABCMeta):
                     if first:
                         scale_value = column[index]
                         if index == self.current_scale_index:
-                            scale_left = (red(bold('{:7.2f}'
-                                          .format(scale_value))))
-                            scale_right = (red(bold('<< '))
-                                           + red(bold('{:.2f}'
-                                                 .format(self.current_close))))
+                            scale_left = (self._style('red', self._style('bold', '{:7.2f}'))
+                                          .format(scale_value))
+                            scale_right = (self._style('red', self._style('bold', '<< '))
+                                           + self._style('red', self._style('bold', '{:.2f}'))
+                                                 .format(self.current_close))
                         else:
                             scale_left = '{:7.2f}'.format(scale_value)
                             scale_right = '{:.2f}'.format(scale_value)
@@ -85,6 +87,17 @@ class PFChartBase(metaclass=ABCMeta):
             index -= 1
             first = True
         return chart
+
+    def _get_month(self, date_value):
+        datetime_object = datetime.strptime(date_value, '%Y-%m-%d')
+        month = str(datetime_object.month)
+        if month == '10':
+            month = 'A'
+        elif month == '11':
+            month = 'B'
+        elif month == '12':
+            month = 'C'
+        return self._style('bold', self._style('red', month))
 
     def _get_scale_index(self, value, direction):
         index = 0
@@ -287,18 +300,13 @@ class PFChartBase(metaclass=ABCMeta):
         self.chart_meta_data[date_value]['prior_low'] = prior_low
         self._store_custom_metadata(day)
 
-    @staticmethod
-    def _get_month(date_value):
-        datetime_object = datetime.strptime(date_value, '%Y-%m-%d')
-        month = str(datetime_object.month)
-        if month == '10':
-            month = 'A'
-        elif month == '11':
-            month = 'B'
-        elif month == '12':
-            month = 'C'
-        return bold(red(month))
-
+    def _style(self, style, message):
+        if self.style_output:
+            method = getattr(pypf.terminal_format, style)
+            return method(message)
+        else:
+            return message
+            
     @staticmethod
     def _get_status(signal, direction):
         if signal == 'buy' and direction == 'x':
@@ -338,9 +346,9 @@ class PFChart(PFChartBase):
     """Point and figure chart."""
 
     def __init__(self, security, period=1,
-                 box_size=.01, reversal=3, method='HL'):
+                 box_size=.01, reversal=3, method='HL', style_output=False):
         """Initialize point and figure chart."""
-        super().__init__(period, box_size, reversal)
+        super().__init__(period, box_size, reversal, style_output)
         self.security = security
         self.method = method
         self.current_date = ''
@@ -351,11 +359,11 @@ class PFChart(PFChartBase):
 
         self.open_field = None
         self.volume_field = None
-
+        
     def _get_chart_title(self):
         self._set_current_prices()
         title = ""
-        title = title + "  " + bold(underline(self.security.symbol))
+        title = title + "  " + self._style('bold', self._style('underline',self.security.symbol))
         title = (title
                  + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
                  .format(self.current_date, self.current_open,
@@ -371,8 +379,8 @@ class PFChart(PFChartBase):
         title = title + str(self.method) + " method\n"
         title = (title
                  + "  signal: "
-                 + bold(self.current_signal)
-                 + " status: " + bold(self.current_status)
+                 + self._style('bold', self.current_signal)
+                 + " status: " + self._style('bold', self.current_status)
                  + "\n\n")
         return title
 

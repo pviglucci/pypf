@@ -11,9 +11,8 @@ import os
 import sys
 
 if sys.platform != 'ios':
-    # ugly hack but it let's us develop on ios.
+    # ugly hack but it lets us develop on ios.
     # the cython parts of pandas are not supported and will break on import.
-    print(sys.platform)
     from pandas_datareader._utils import RemoteDataError
     import pandas_datareader.data as web
 
@@ -79,7 +78,7 @@ class Instrument(metaclass=ABCMeta):
             try:
                 self._download_data()
             except Exception:
-                # should be RemoteDataError
+                # should be RemoteDataError if pandas worked on ios
                 logging.info('unable to download data for ' + self.symbol)
                 raise
             csv_file = open(self.symbol_file, newline='')

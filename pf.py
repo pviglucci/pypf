@@ -61,6 +61,9 @@ def __get_option_parser():
                            type=int, default=3,
                            metavar="REVERSAL",
                            help="set the %% reversal [default: %(default)s]")
+    pf_parser.add_argument("--style",
+                           action="store_true", dest="style_output",
+                           help="Use color and style in terminal output [default: False]")                           
     pf_parser.add_argument("symbol", metavar='SYMBOL',
                            help='the symbol of the security to chart')
 
@@ -77,11 +80,12 @@ def __process_options(options):
     pf_method = options.pf_chart_method
     pf_period = options.pf_period
     pf_reversal = options.pf_reversal
+    style_output = options.style_output
 
     symbol = options.symbol
     security = Security(symbol, force_download, force_cache)
 
-    chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method)
+    chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method, style_output)
     chart.create_chart(dump=True)
 
 
