@@ -1,5 +1,7 @@
 pypf
 --------
+Simple set of classes that can be used to generate command line
+point and figure charts. 
 
 To use (with caution), simply do::
 
