@@ -100,6 +100,32 @@ class PFChart(object):
             first = True
         return chart
 
+    def _get_chart_title(self):
+        self._set_current_prices()
+        title = ""
+        title = title + "  " + self._style('bold',
+                                           self._style('underline',
+                                                       self.security.symbol))
+        title = (title
+                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
+                 .format(self.current_date, self.current_open,
+                         self.current_high, self.current_low,
+                         self.current_close)
+                 + ")\n")
+
+        title = (title
+                 + "  "
+                 + str((self.box_size * 100).quantize(PFChart.TWOPLACES))
+                 + "% box, ")
+        title = title + str(self.reversal) + " box reversal, "
+        title = title + str(self.method) + " method\n"
+        title = (title
+                 + "  signal: "
+                 + self._style('bold', self.current_signal)
+                 + " status: " + self._style('bold', self.current_status)
+                 + "\n\n")
+        return title
+
     def _get_month(self, date_value):
         datetime_object = datetime.strptime(date_value, '%Y-%m-%d')
         month = str(datetime_object.month)
@@ -296,68 +322,6 @@ class PFChart(object):
 
         return self.chart_data
 
-    def _set_current_state(self):
-        current_meta_index = next(reversed(self.chart_meta_data))
-        current_meta = self.chart_meta_data[current_meta_index]
-        self.current_signal = current_meta['signal']
-        self.current_status = current_meta['status']
-        self.current_action = current_meta['action']
-        self.current_move = current_meta['move']
-        self.current_column_index = current_meta['column_index']
-        self.current_scale_index = current_meta['scale_index']
-        self.current_scale_value = current_meta['scale_value']
-        self.current_direction = current_meta['direction']
-
-    def _store_base_metadata(self, day, signal, status, action, move,
-                             column_index, scale_index, scale_value,
-                             direction, prior_high, prior_low):
-        date_value = day['Date']
-        self.chart_meta_data[date_value] = {}
-        self.chart_meta_data[date_value]['signal'] = signal
-        self.chart_meta_data[date_value]['status'] = status
-        self.chart_meta_data[date_value]['action'] = action
-        self.chart_meta_data[date_value]['move'] = move
-        self.chart_meta_data[date_value]['column_index'] = column_index
-        self.chart_meta_data[date_value]['scale_index'] = scale_index
-        self.chart_meta_data[date_value]['scale_value'] = scale_value
-        self.chart_meta_data[date_value]['direction'] = direction
-        self.chart_meta_data[date_value]['prior_high'] = prior_high
-        self.chart_meta_data[date_value]['prior_low'] = prior_low
-        self._store_custom_metadata(day)
-
-    def _style(self, style, message):
-        if self.style_output:
-            method = getattr(pypf.terminal_format, style)
-            return method(message)
-        else:
-            return message
-
-    def _get_chart_title(self):
-        self._set_current_prices()
-        title = ""
-        title = title + "  " + self._style('bold',
-                                           self._style('underline',
-                                                       self.security.symbol))
-        title = (title
-                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
-                 .format(self.current_date, self.current_open,
-                         self.current_high, self.current_low,
-                         self.current_close)
-                 + ")\n")
-
-        title = (title
-                 + "  "
-                 + str((self.box_size * 100).quantize(PFChart.TWOPLACES))
-                 + "% box, ")
-        title = title + str(self.reversal) + " box reversal, "
-        title = title + str(self.method) + " method\n"
-        title = (title
-                 + "  signal: "
-                 + self._style('bold', self.current_signal)
-                 + " status: " + self._style('bold', self.current_status)
-                 + "\n\n")
-        return title
-
     def _set_current_prices(self):
         day = next(reversed(self.historical_data))
         current_day = self.historical_data[day]
@@ -370,6 +334,18 @@ class PFChart(object):
                             .quantize(PFChart.TWOPLACES))
         self.current_close = (current_day[self.close_field]
                               .quantize(PFChart.TWOPLACES))
+
+    def _set_current_state(self):
+        current_meta_index = next(reversed(self.chart_meta_data))
+        current_meta = self.chart_meta_data[current_meta_index]
+        self.current_signal = current_meta['signal']
+        self.current_status = current_meta['status']
+        self.current_action = current_meta['action']
+        self.current_move = current_meta['move']
+        self.current_column_index = current_meta['column_index']
+        self.current_scale_index = current_meta['scale_index']
+        self.current_scale_value = current_meta['scale_value']
+        self.current_direction = current_meta['direction']
 
     def _set_historical_data(self):
         if len(self.security.historical_data) == 0:
@@ -431,5 +407,29 @@ class PFChart(object):
         for index, scale_value in enumerate(temp_scale):
             self.scale[index] = scale_value
 
+    def _store_base_metadata(self, day, signal, status, action, move,
+                             column_index, scale_index, scale_value,
+                             direction, prior_high, prior_low):
+        date_value = day['Date']
+        self.chart_meta_data[date_value] = {}
+        self.chart_meta_data[date_value]['signal'] = signal
+        self.chart_meta_data[date_value]['status'] = status
+        self.chart_meta_data[date_value]['action'] = action
+        self.chart_meta_data[date_value]['move'] = move
+        self.chart_meta_data[date_value]['column_index'] = column_index
+        self.chart_meta_data[date_value]['scale_index'] = scale_index
+        self.chart_meta_data[date_value]['scale_value'] = scale_value
+        self.chart_meta_data[date_value]['direction'] = direction
+        self.chart_meta_data[date_value]['prior_high'] = prior_high
+        self.chart_meta_data[date_value]['prior_low'] = prior_low
+        self._store_custom_metadata(day)
+
     def _store_custom_metadata(self, day):
         pass
+
+    def _style(self, style, message):
+        if self.style_output:
+            method = getattr(pypf.terminal_format, style)
+            return method(message)
+        else:
+            return message
