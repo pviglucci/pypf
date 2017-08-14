@@ -4,11 +4,9 @@ from abc import abstractmethod
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
-from pypf.terminal_format import bold
-from pypf.terminal_format import red
-from pypf.terminal_format import underline
 
 import pypf.terminal_format
+
 
 class PFChartBase(metaclass=ABCMeta):
     """Base class for point and figure charts."""
@@ -67,11 +65,15 @@ class PFChartBase(metaclass=ABCMeta):
                     if first:
                         scale_value = column[index]
                         if index == self.current_scale_index:
-                            scale_left = (self._style('red', self._style('bold', '{:7.2f}'))
+                            scale_left = (self._style('red',
+                                          self._style('bold', '{:7.2f}'))
                                           .format(scale_value))
-                            scale_right = (self._style('red', self._style('bold', '<< '))
-                                           + self._style('red', self._style('bold', '{:.2f}'))
-                                                 .format(self.current_close))
+                            scale_right = (self._style('red',
+                                           self._style('bold', '<< '))
+                                           + self._style('red',
+                                                         self._style('bold',
+                                                                     '{:.2f}'))
+                                           .format(self.current_close))
                         else:
                             scale_left = '{:7.2f}'.format(scale_value)
                             scale_right = '{:.2f}'.format(scale_value)
@@ -306,7 +308,7 @@ class PFChartBase(metaclass=ABCMeta):
             return method(message)
         else:
             return message
-            
+
     @staticmethod
     def _get_status(signal, direction):
         if signal == 'buy' and direction == 'x':
@@ -345,8 +347,8 @@ class PFChartBase(metaclass=ABCMeta):
 class PFChart(PFChartBase):
     """Point and figure chart."""
 
-    def __init__(self, security, period=1,
-                 box_size=.01, reversal=3, method='HL', style_output=False):
+    def __init__(self, security, period=1, box_size=.01, reversal=3,
+                 method='HL', style_output=False):
         """Initialize point and figure chart."""
         super().__init__(period, box_size, reversal, style_output)
         self.security = security
@@ -359,11 +361,13 @@ class PFChart(PFChartBase):
 
         self.open_field = None
         self.volume_field = None
-        
+
     def _get_chart_title(self):
         self._set_current_prices()
         title = ""
-        title = title + "  " + self._style('bold', self._style('underline',self.security.symbol))
+        title = title + "  " + self._style('bold',
+                                           self._style('underline',
+                                                       self.security.symbol))
         title = (title
                  + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
                  .format(self.current_date, self.current_open,

@@ -13,7 +13,7 @@ import sys
 if sys.platform != 'ios':
     # ugly hack but it lets us develop on ios.
     # the cython parts of pandas are not supported and will break on import.
-    from pandas_datareader._utils import RemoteDataError
+    # from pandas_datareader._utils import RemoteDataError
     import pandas_datareader.data as web
 
 
@@ -40,6 +40,7 @@ class Instrument(metaclass=ABCMeta):
         self.historical_data = OrderedDict()
         self.force = force
         self.cache = cache
+
         # force the use of cache on ios since pandas is not supported.
         # this will prevent _download_data from being called.
         if sys.platform == 'ios':
