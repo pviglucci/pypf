@@ -1,6 +1,4 @@
 """Classes to generate point and figure charts."""
-from abc import ABCMeta
-from abc import abstractmethod
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
@@ -8,13 +6,16 @@ from decimal import Decimal
 import pypf.terminal_format
 
 
-class PFChartBase(metaclass=ABCMeta):
+class PFChart(object):
     """Base class for point and figure charts."""
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, period=1, box_size=.01, reversal=3, style_output=False):
+    def __init__(self, security, period=1, box_size=.01, reversal=3,
+                 method='HL', style_output=False):
         """Initialize common functionality."""
+        self.security = security
+        self.method = method
         self.period = period
         self.box_size = Decimal(box_size)
         self.reversal = int(reversal)
@@ -23,9 +24,18 @@ class PFChartBase(metaclass=ABCMeta):
         self.historical_data = []
         self.chart_data = []
         self.scale = OrderedDict()
+
+        self.current_date = ''
+        self.current_open = ''
+        self.current_high = ''
+        self.current_low = ''
+        self.current_close = ''
+
+        self.open_field = None
         self.high_field = None
         self.low_field = None
         self.close_field = None
+        self.volume_field = None
         self.date_field = None
 
         self.current_signal = None
@@ -112,6 +122,19 @@ class PFChartBase(metaclass=ABCMeta):
                 else:
                     return index
             index += 1
+
+    def _get_status(self, signal, direction):
+        if signal == 'buy' and direction == 'x':
+            status = 'bull confirmed'
+        elif signal == 'buy' and direction == 'o':
+            status = 'bull correction'
+        elif signal == 'sell' and direction == 'o':
+            status = 'bear confirmed'
+        elif signal == 'sell' and direction == 'x':
+            status = 'bear correction'
+        else:
+            status = 'none'
+        return status
 
     def _set_chart_data(self):
         self.chart_data = []
@@ -259,7 +282,7 @@ class PFChartBase(metaclass=ABCMeta):
             # Store the meta data for the day
             status = self._get_status(signal, direction)
             scale_value = (self.scale[scale_index]
-                           .quantize(PFChartBase.TWOPLACES))
+                           .quantize(PFChart.TWOPLACES))
             prior_high = self.scale[prior_high_index]
             prior_low = self.scale[prior_low_index]
             self._store_base_metadata(day, signal, status, action, move,
@@ -309,59 +332,6 @@ class PFChartBase(metaclass=ABCMeta):
         else:
             return message
 
-    @staticmethod
-    def _get_status(signal, direction):
-        if signal == 'buy' and direction == 'x':
-            status = 'bull confirmed'
-        elif signal == 'buy' and direction == 'o':
-            status = 'bull correction'
-        elif signal == 'sell' and direction == 'o':
-            status = 'bear confirmed'
-        elif signal == 'sell' and direction == 'x':
-            status = 'bear correction'
-        else:
-            status = 'none'
-        return status
-
-    @abstractmethod
-    def _get_chart_title(self):
-        pass
-
-    @abstractmethod
-    def _set_historical_data(self):
-        pass
-
-    @abstractmethod
-    def _set_price_fields(self):
-        pass
-
-    @abstractmethod
-    def _set_scale(self):
-        pass
-
-    @abstractmethod
-    def _store_custom_metadata(self, day):
-        pass
-
-
-class PFChart(PFChartBase):
-    """Point and figure chart."""
-
-    def __init__(self, security, period=1, box_size=.01, reversal=3,
-                 method='HL', style_output=False):
-        """Initialize point and figure chart."""
-        super().__init__(period, box_size, reversal, style_output)
-        self.security = security
-        self.method = method
-        self.current_date = ''
-        self.current_open = ''
-        self.current_high = ''
-        self.current_low = ''
-        self.current_close = ''
-
-        self.open_field = None
-        self.volume_field = None
-
     def _get_chart_title(self):
         self._set_current_prices()
         title = ""
@@ -377,7 +347,7 @@ class PFChart(PFChartBase):
 
         title = (title
                  + "  "
-                 + str((self.box_size * 100).quantize(PFChartBase.TWOPLACES))
+                 + str((self.box_size * 100).quantize(PFChart.TWOPLACES))
                  + "% box, ")
         title = title + str(self.reversal) + " box reversal, "
         title = title + str(self.method) + " method\n"
@@ -393,13 +363,13 @@ class PFChart(PFChartBase):
         current_day = self.historical_data[day]
         self.current_date = current_day[self.date_field]
         self.current_open = (current_day[self.open_field]
-                             .quantize(PFChartBase.TWOPLACES))
+                             .quantize(PFChart.TWOPLACES))
         self.current_high = (current_day[self.high_field]
-                             .quantize(PFChartBase.TWOPLACES))
+                             .quantize(PFChart.TWOPLACES))
         self.current_low = (current_day[self.low_field]
-                            .quantize(PFChartBase.TWOPLACES))
+                            .quantize(PFChart.TWOPLACES))
         self.current_close = (current_day[self.close_field]
-                              .quantize(PFChartBase.TWOPLACES))
+                              .quantize(PFChart.TWOPLACES))
 
     def _set_historical_data(self):
         if len(self.security.historical_data) == 0:
@@ -461,5 +431,5 @@ class PFChart(PFChartBase):
         for index, scale_value in enumerate(temp_scale):
             self.scale[index] = scale_value
 
-    def _store_custom_metadata(self, date_value):
+    def _store_custom_metadata(self, day):
         pass
