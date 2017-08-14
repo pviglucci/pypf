@@ -8,7 +8,9 @@ to create charts at the command line.
 
 Installation
 ------------
-::
+
+Install using pip::
+
     # pip3 install pypf
 
 Usage
