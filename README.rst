@@ -3,8 +3,8 @@ pypf
 ====
 
 Simple set of classes that can be used to generate point and figure charts.
-The package also includes a command line script (pf.py) that can be used
-to create charts at the command line.
+The package also includes a script (pf.py) that can be used to create charts
+at the command line.
 
 Installation
 ------------
