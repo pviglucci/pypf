@@ -5,7 +5,6 @@ from pypf.chart import PFChart
 from pypf.instrument import Security
 
 import logging
-# TODO(me): Make colored output an option
 
 
 def main():
@@ -26,10 +25,10 @@ def __get_option_parser():
                         help="increase status messages to stdout")
     parser.add_argument("--force-cache",
                         action="store_true", dest="force_cache",
-                        help="use cached data [default: False]")
+                        help="force use of cached data [default: False]")
     parser.add_argument("--force-download",
                         action="store_true", dest="force_download",
-                        help="force download data [default: False]")
+                        help="force download of data [default: False]")
 
     # Top level commands
     subparsers = parser.add_subparsers(help='description',
