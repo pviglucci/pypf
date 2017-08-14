@@ -17,12 +17,13 @@ def _readme():
     except Exception:
         return ''
 
+
 setup(name='pypf',
       version='0.9',
       description='Create point and figure charts',
       long_description=_readme(),
       classifiers=[
-                  'Development Status :: 3 - Alpha',
+                  'Development Status :: 4 - Beta',
                   'License :: OSI Approved :: MIT License',
                   'Programming Language :: Python :: 3.6',
                   'Topic :: Office/Business :: Financial :: Investment',
