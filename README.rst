@@ -8,14 +8,14 @@ to create charts at the command line.
 
 Installation
 ------------
-.. code::
-    pip3 install pypf
+
+    # pip3 install pypf
 
 Usage
 -----
 
 To use in a program, simply do:
-.. code::
+
     >>> from pypf.chart import PFChart
     >>> from pypf.instrument import Security
     >>> security = Security(symbol, force_download, force_cache)
@@ -23,11 +23,11 @@ To use in a program, simply do:
     >>> chart.create_chart(dump=True)
 
 To use at the command line:
-.. code::
+
     # pf.py pf --pf-period 1 --pf-box-size .01 --pf-reversal 3 AAPL
 
 pf.py supports the following arguments:
-.. code::
+
     usage: pf.py [-h] [-v] [--force-cache] [--force-download] command ...
 
     positional arguments:
@@ -41,7 +41,7 @@ pf.py supports the following arguments:
       --force-download  force download of data [default: False]
 
 The pf command supports the following arguments:
-.. code::
+
     usage: pf.py pf [-h] [--pf-box-size SIZE] [--pf-method METHOD]
                 [--pf-period PERIOD] [--pf-reversal REVERSAL] [--style]
                 SYMBOL
