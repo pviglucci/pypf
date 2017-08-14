@@ -55,9 +55,9 @@ The pf command supports the following arguments::
     -h, --help            show this help message and exit
     --pf-box-size SIZE    set the % box size [default: 0.01]
     --pf-method METHOD    specify High/Low (HL) or Close (C) [default: HL]
-    --pf-period PERIOD    set the period [default: 1]
+    --pf-period PERIOD    set the period in years [default: 1]
     --pf-reversal REVERSAL
-                        set the % reversal [default: 3]
+                        set the box reversal [default: 3]
     --style               Use color and style in terminal output [default: False]
 
 License

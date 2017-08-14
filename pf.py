@@ -54,16 +54,17 @@ def __get_option_parser():
                            action="store", dest="pf_period",
                            type=float, default=1,
                            metavar="PERIOD",
-                           help="set the period [default: %(default)s]")
+                           help="set the period in years \
+                                 [default: %(default)s]")
     pf_parser.add_argument("--pf-reversal",
                            action="store", dest="pf_reversal",
                            type=int, default=3,
                            metavar="REVERSAL",
-                           help="set the %% reversal [default: %(default)s]")
+                           help="set the box reversal [default: %(default)s]")
     pf_parser.add_argument("--style",
                            action="store_true", dest="style_output",
                            help="Use color and style in terminal output \
-                           [default: False]")
+                                 [default: False]")
     pf_parser.add_argument("symbol", metavar='SYMBOL',
                            help='the symbol of the security to chart')
 
