@@ -2,9 +2,20 @@
 from setuptools import setup
 
 
+def _license():
+    try:
+        with open('LICENSE.txt') as f:
+            return f.read()
+    except Exception:
+        return ''
+
+
 def _readme():
-    with open('README.rst') as f:
-        return f.read()
+    try:
+        with open('README.rst') as f:
+            return f.read()
+    except Exception:
+        return ''
 
 setup(name='pypf',
       version='0.9',
@@ -20,7 +31,7 @@ setup(name='pypf',
       url='http://github.com/pviglucci/pypf',
       author='Peter Viglucci',
       author_email='pviglucci@gmail.com',
-      license='MIT',
+      license=_license(),
       packages=['pypf'],
       install_requires=['pandas-datareader', ],
       scripts=['pf.py'],
