@@ -9,16 +9,14 @@ at the command line.
 Installation
 ------------
 
-Install using pip
-.. code-block:: shell
+Install using pip::
 
     $ pip3 install pypf
 
 Usage
 -----
 
-To use in a program, simply do
-.. code-block:: python
+To use in a program, simply do::
 
     from pypf.chart import PFChart
     from pypf.instrument import Security
@@ -26,13 +24,11 @@ To use in a program, simply do
     chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method, style_output)
     chart.create_chart(dump=True)
 
-To use at the command line
-.. code-block:: shell
+To use at the command line::
 
     $ pf.py pf --pf-period 1 --pf-box-size .01 --pf-reversal 3 AAPL
 
-pf.py supports the following arguments
-.. code-block:: shell
+pf.py supports the following arguments::
 
     usage: pf.py [-h] [-v] [--force-cache] [--force-download] command ...
 
@@ -46,8 +42,7 @@ pf.py supports the following arguments
       --force-cache     force use of cached data [default: False]
       --force-download  force download of data [default: False]
 
-The pf command supports the following arguments
-.. code-block:: shell
+The pf command supports the following arguments::
 
     usage: pf.py pf [-h] [--pf-box-size SIZE] [--pf-method METHOD]
                 [--pf-period PERIOD] [--pf-reversal REVERSAL] [--style]
