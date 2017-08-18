@@ -3,18 +3,15 @@ from abc import ABCMeta
 from abc import abstractmethod
 from collections import OrderedDict
 from decimal import Decimal
+from io import StringIO
 
 import csv
 import datetime
 import logging
 import os
-import sys
-
-if sys.platform != 'ios':
-    # ugly hack but it lets us develop on ios.
-    # the cython parts of pandas are not supported and will break on import.
-    # from pandas_datareader._utils import RemoteDataError
-    import pandas_datareader.data as web
+import re
+import requests
+import time
 
 
 class Instrument(metaclass=ABCMeta):
@@ -23,28 +20,16 @@ class Instrument(metaclass=ABCMeta):
     # TODO(me) Add properties to access attributes.
     def __init__(self, symbol, force=False, cache=False, period=5):
         """Initialize the common functionality for all Instruments."""
-        now = datetime.datetime.now()
+        self.historical_data = OrderedDict()
         self.home_directory = os.path.expanduser('~/.pypf')
         self.historical_directory = os.path.join(self.home_directory, 'data')
         if os.path.isdir(self.historical_directory) is False:
             logging.info('creating data directory '
                          + self.historical_directory)
             os.makedirs(self.historical_directory)
-        self.symbol = symbol.lower().replace('.', '-')
-        self.symbol_file = os.path.join(self.historical_directory,
-                                        self.symbol + '.csv')
-        self.month = now.month
-        self.day = now.day
-        self.to_year = now.year
-        self.from_year = now.year - period
-        self.historical_data = OrderedDict()
+
         self.force = force
         self.cache = cache
-
-        # force the use of cache on ios since pandas is not supported.
-        # this will prevent _download_data from being called.
-        if sys.platform == 'ios':
-            self.cache = True
 
     def populate_data(self):
         """Populate the instrument with data.
@@ -116,20 +101,54 @@ class Instrument(metaclass=ABCMeta):
 class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
-    def __init__(self, symbol, force=False, cache=False, period=5):
+    def __init__(self, symbol, force=False, cache=False,
+                 period=5, interval='1d'):
         """Initialize the security.
 
         Use the force and cache options to set download behavior.
         """
         super().__init__(symbol, force, cache, period)
+        self.api_url = ("https://query1.finance.yahoo.com/v7/finance/download/"
+                        "%s?period1=%s&period2=%s&interval=%s"
+                        "&events=history&crumb=%s")
+        self.symbol = symbol.upper().replace('.', '-')
+        self.symbol_file = os.path.join(self.historical_directory,
+                                        self.symbol + '.csv')
+        self.cookie, self.crumb = self._get_cookie_crumb()
+
+        now = datetime.datetime.now()
+        m = now.month
+        d = now.day
+        y = now.year - period
+        self.start = int(time.mktime(datetime.datetime(y, m, d).timetuple()))
+        self.end = int(time.time())
+        self.interval = interval
+        self.url = self.api_url % (self.symbol, self.start, self.end,
+                                   self.interval, self.crumb)
 
     def __str__(self):
         """Return the symbol of the security."""
         return self.symbol
 
+    def _get_cookie_crumb(self):
+        """Return a tuple pair of cookie and crumb used in the request."""
+        url = 'https://finance.yahoo.com/quote/%s/history' % (self.symbol)
+        r = requests.get(url)
+        txt = r.content
+        cookie = r.cookies['B']
+        pattern = re.compile('.*"CrumbStore":\{"crumb":"(?P<crumb>[^"]+)"\}')
+
+        for line in txt.splitlines():
+            m = pattern.match(line.decode("utf-8"))
+            if m is not None:
+                crumb = m.groupdict()['crumb']
+                crumb = crumb.replace(u'\\u002F', '/')
+        return cookie, crumb
+
     def _download_data(self):
-        start = datetime.datetime(self.from_year, self.month, self.day)
-        end = datetime.datetime(self.to_year, self.month, self.day)
-        h = web.DataReader(self.symbol, 'yahoo', start, end)
-        h.to_csv(self.symbol_file)
+        data = requests.get(self.url, cookies={'B': self.cookie})
+        content = StringIO(data.content.decode("utf-8"))
+        with open(self.symbol_file, 'w', newline='') as csvfile:
+            for row in content.readlines():
+                csvfile.write(row)
         return True

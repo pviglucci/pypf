@@ -86,6 +86,8 @@ def __process_options(options):
     symbol = options.symbol
     security = Security(symbol, force_download, force_cache)
 
+    # security.populate_data()
+    # return
     chart = PFChart(security, pf_period, pf_box_size, pf_reversal,
                     pf_method, style_output)
     chart.create_chart(dump=True)
