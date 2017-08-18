@@ -30,6 +30,7 @@ class Instrument(metaclass=ABCMeta):
 
         self.force = force
         self.cache = cache
+        self.period = period
 
     def populate_data(self):
         """Populate the instrument with data.
@@ -114,17 +115,7 @@ class Security(Instrument):
         self.symbol = symbol.upper().replace('.', '-')
         self.symbol_file = os.path.join(self.historical_directory,
                                         self.symbol + '.csv')
-        self.cookie, self.crumb = self._get_cookie_crumb()
-
-        now = datetime.datetime.now()
-        m = now.month
-        d = now.day
-        y = now.year - period
-        self.start = int(time.mktime(datetime.datetime(y, m, d).timetuple()))
-        self.end = int(time.time())
         self.interval = interval
-        self.url = self.api_url % (self.symbol, self.start, self.end,
-                                   self.interval, self.crumb)
 
     def __str__(self):
         """Return the symbol of the security."""
@@ -146,6 +137,16 @@ class Security(Instrument):
         return cookie, crumb
 
     def _download_data(self):
+        self.cookie, self.crumb = self._get_cookie_crumb()
+        now = datetime.datetime.now()
+        m = now.month
+        d = now.day
+        y = now.year - self.period
+        self.start = int(time.mktime(datetime.datetime(y, m, d).timetuple()))
+        self.end = int(time.time())
+        self.interval = self.interval
+        self.url = self.api_url % (self.symbol, self.start, self.end,
+                                   self.interval, self.crumb)
         data = requests.get(self.url, cookies={'B': self.cookie})
         content = StringIO(data.content.decode("utf-8"))
         with open(self.symbol_file, 'w', newline='') as csvfile:
