@@ -53,7 +53,7 @@ To use in a program, simply do::
 
 To use at the command line::
 
-    $ pf.py pf --pf-period 1 --pf-box-size .01 --pf-reversal 3 AAPL
+    $ pf.py -v pf --duration 1 --box-size .01 --reversal 3 AAPL
 
 pf.py supports the following arguments::
 
