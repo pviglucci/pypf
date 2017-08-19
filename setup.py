@@ -2,26 +2,17 @@
 from setuptools import setup
 
 
-def _license():
-    try:
-        with open('LICENSE.txt') as f:
-            return f.read()
-    except Exception:
-        return ''
+with open('LICENSE.txt') as f:
+    license = f.read()
 
-
-def _readme():
-    try:
-        with open('README.rst') as f:
-            return f.read()
-    except Exception:
-        return ''
+with open('README.rst') as f:
+    long_description = f.read()
 
 
 setup(name='pypf',
       version='0.9',
       description='Create point and figure charts',
-      long_description=_readme(),
+      long_description=long_description,
       classifiers=[
                   'Development Status :: 4 - Beta',
                   'License :: OSI Approved :: MIT License',
@@ -32,7 +23,7 @@ setup(name='pypf',
       url='http://github.com/pviglucci/pypf',
       author='Peter Viglucci',
       author_email='pviglucci@gmail.com',
-      license=_license(),
+      license=license,
       packages=['pypf'],
       install_requires=['requests', ],
       scripts=['pf.py'],
