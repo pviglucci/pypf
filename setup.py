@@ -10,7 +10,7 @@ with open('README.rst') as f:
 
 
 setup(name='pypf',
-      version='0.9.1',
+      version='0.9.2',
       description='Create point and figure charts',
       long_description=long_description,
       classifiers=[
@@ -23,7 +23,7 @@ setup(name='pypf',
       url='http://github.com/pviglucci/pypf',
       author='Peter Viglucci',
       author_email='pviglucci@gmail.com',
-      license=license,
+      license='MIT License',
       packages=['pypf'],
       install_requires=['requests', ],
       scripts=['pf.py'],
