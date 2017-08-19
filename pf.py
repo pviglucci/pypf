@@ -75,7 +75,7 @@ def __get_option_parser():
                            help="set the box reversal [default: %(default)s]")
     pf_parser.add_argument("--style",
                            action="store_true", dest="style",
-                           help="Use color and style in terminal output \
+                           help="use color and style in terminal output \
                                  [default: False]")
     pf_parser.add_argument("symbol", metavar='SYMBOL',
                            help='the symbol of the security to chart')

@@ -31,6 +31,10 @@ class Instrument(metaclass=ABCMeta):
 
         self.force_download = force_download
         self.force_cache = force_cache
+        if interval not in ["1d", "1wk", "1mo"]:
+            logging.info("incorrect interval: "
+                         "valid intervals are 1d, 1wk, 1mo")
+            raise ValueError()
         self.interval = interval
         self.period = period
 
@@ -111,10 +115,6 @@ class Security(Instrument):
         Use force_download and force_cache to set download behavior.
         """
         super().__init__(symbol, force_download, force_cache, interval, period)
-        if self.interval not in ["1d", "1wk", "1mo"]:
-            logging.info("incorrect interval: "
-                         "valid intervals are 1d, 1wk, 1mo")
-            raise ValueError()
         self.symbol = symbol.lower().replace('.', '-')
         self.symbol_file = os.path.join(self.historical_directory,
                                         self.symbol

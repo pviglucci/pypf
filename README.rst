@@ -20,8 +20,8 @@ To use in a program, simply do::
 
     from pypf.chart import PFChart
     from pypf.instrument import Security
-    security = Security(symbol, force_download, force_cache)
-    chart = PFChart(security, pf_period, pf_box_size, pf_reversal, pf_method, style_output)
+    security = Security(symbol, force_download, force_cache, interval, period)
+    chart = PFChart(security, duration, box_size, reversal, method, style)
     chart.create_chart(dump=True)
 
 To use at the command line::
@@ -30,35 +30,39 @@ To use at the command line::
 
 pf.py supports the following arguments::
 
-    usage: pf.py [-h] [-v] [--force-cache] [--force-download] command ...
+    usage: pf.py [-h] [-v] [--interval INTERVAL] [--force-cache]
+                 [--force-download] [--period PERIOD]
+                 command ...
 
     positional arguments:
-      command           description
-        pf              create point and figure charts
+      command              description
+        pf                 create point and figure charts
 
     optional arguments:
-      -h, --help        show this help message and exit
-      -v, --verbose     increase status messages to stdout
-      --force-cache     force use of cached data [default: False]
-      --force-download  force download of data [default: False]
+      -h, --help           show this help message and exit
+      -v, --verbose        increase status messages to stdout
+      --interval INTERVAL  specify day (1d), week (1wk), or month (1mo) interval
+                           [default: 1d]
+      --force-cache        force use of cached data [default: False]
+      --force-download     force download of data [default: False]
+      --period PERIOD      set the years of data to download [default: 10]
 
 The pf command supports the following arguments::
 
-    usage: pf.py pf [-h] [--pf-box-size SIZE] [--pf-method METHOD]
-                [--pf-period PERIOD] [--pf-reversal REVERSAL] [--style]
-                SYMBOL
+    usage: pf.py pf [-h] [--box-size BOX_SIZE] [--duration DURATION]
+                    [--method METHOD] [--reversal REVERSAL] [--style]
+                    SYMBOL
 
     positional arguments:
-    SYMBOL                the symbol of the security to chart
+      SYMBOL               the symbol of the security to chart
 
     optional arguments:
-    -h, --help            show this help message and exit
-    --pf-box-size SIZE    set the % box size [default: 0.01]
-    --pf-method METHOD    specify High/Low (HL) or Close (C) [default: HL]
-    --pf-period PERIOD    set the period in years [default: 1]
-    --pf-reversal REVERSAL
-                        set the box reversal [default: 3]
-    --style               Use color and style in terminal output [default: False]
+      -h, --help           show this help message and exit
+      --box-size BOX_SIZE  set the % box size [default: 0.01]
+      --duration DURATION  set the duration in years for the chart [default: 1]
+      --method METHOD      specify High/Low (HL) or Close (C) [default: HL]
+      --reversal REVERSAL  set the box reversal [default: 3]
+      --style              use color and style in terminal output [default: False]
 
 License
 -------

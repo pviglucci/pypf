@@ -11,12 +11,12 @@ class PFChart(object):
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, security, period=1, box_size=.01, reversal=3,
+    def __init__(self, security, duration=1, box_size=.01, reversal=3,
                  method='HL', style=False):
         """Initialize common functionality."""
         self.security = security
         self.method = method
-        self.period = period
+        self.duration = duration
         self.box_size = Decimal(box_size)
         self.reversal = int(reversal)
         self.style = style
@@ -351,7 +351,12 @@ class PFChart(object):
         if len(self.security.historical_data) == 0:
             self.security.populate_data()
 
-        days = int(self.period * 252)
+        if self.security.interval == '1d':
+            days = int(self.duration * 252)
+        elif self.security.interval == '1wk':
+            days = int(self.duration * 52)
+        elif self.security.interval == '1mo':
+            days = int(self.duration * 12)
         if len(self.security.historical_data) > days:
             offset = len(self.security.historical_data) - days
             i = 0
