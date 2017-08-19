@@ -10,28 +10,24 @@ at the command line that look like this::
     1.00% box, 3 box reversal, HL method
     signal: sell status: bear confirmed
 
-    25.93|                                                                        |25.93
-    25.68|                      x                                                 |25.68
-    25.42|                      u d                                               |25.42
-    25.17|                      u d                                     x         |25.17
-    24.92|                      u d                                 x   x d       |24.92
-    24.68|                  x   u o                                 7 d 8 d u     |24.68
-    24.43|                  x d u o                                 x d u d u d   |24.43
-    24.19|                  x d 3 o             x   x               x d u d u d   |24.19
-    23.95|                  x d   o             x d u d     x   u   x d u o   d   |23.95
-    23.71|                  x     o     x   u   x d u d     x d u d x o       d   |23.71
-    23.48|                  x     o     u 4 u d x d 5 d x   x d u d u         o   |<< 23.62
-    23.25|          x   x   x     o u   u d u d x o   d u d x d   d u             |23.25
-    23.02|  x   u   x d x d u     o u d u d   d u     d u d u     o u             |23.02
-    22.79|  x d u d x d x d u     o u d u     o u     d u d u     o               |22.79
-    22.56|  x d u d x d u d u     o   d u     o u     d   d u                     |22.56
-    22.34|  x d u d u d u 2           d u     o           d 6                     |22.34
-    22.12|    o   o u d u             d                   d                       |22.12
-    21.90|        o 1 d                                                           |21.90
-    21.68|        o                                                               |21.68
-    21.47|                                                                        |21.47
-
-
+    25.93|                                                      |25.93
+    25.68|    x                                                 |25.68
+    25.42|    u d                                               |25.42
+    25.17|    u d                                     x         |25.17
+    24.92|    u d                                 x   x d       |24.92
+    24.68|    u o                                 7 d 8 d u     |24.68
+    24.43|  d u o                                 x d u d u d   |24.43
+    24.19|  d 3 o             x   x               x d u d u d   |24.19
+    23.95|  d   o             x d u d     x   u   x d u o   d   |23.95
+    23.71|      o     x   u   x d u d     x d u d x o       d   |23.71
+    23.48|      o     u 4 u d x d 5 d x   x d u d u         o   |<< 23.62
+    23.25|      o u   u d u d x o   d u d x d   d u             |23.25
+    23.02|      o u d u d   d u     d u d u     o u             |23.02
+    22.79|      o u d u     o u     d u d u     o               |22.79
+    22.56|      o   d u     o u     d   d u                     |22.56
+    22.34|          d u     o           d 6                     |22.34
+    22.12|          d                   d                       |22.12
+    21.90|                                                      |21.90
 
 Installation
 ------------
