@@ -18,7 +18,8 @@ class Instrument(metaclass=ABCMeta):
     """Base class for all Instruments."""
 
     # TODO(me) Add properties to access attributes.
-    def __init__(self, symbol, force=False, cache=False, period=5):
+    def __init__(self, symbol, force_download=False, force_cache=False,
+                 interval='1d', period=10):
         """Initialize the common functionality for all Instruments."""
         self.historical_data = OrderedDict()
         self.home_directory = os.path.expanduser('~/.pypf')
@@ -28,8 +29,9 @@ class Instrument(metaclass=ABCMeta):
                          + self.historical_directory)
             os.makedirs(self.historical_directory)
 
-        self.force = force
-        self.cache = cache
+        self.force_download = force_download
+        self.force_cache = force_cache
+        self.interval = interval
         self.period = period
 
     def populate_data(self):
@@ -43,7 +45,7 @@ class Instrument(metaclass=ABCMeta):
         # TODO(me): Refactor without using exceptions.
         download_data = False
 
-        if self.force:
+        if self.force_download:
             download_data = True
         else:
             if os.path.isfile(self.symbol_file):
@@ -57,7 +59,7 @@ class Instrument(metaclass=ABCMeta):
             else:
                 download_data = True
 
-        if self.cache:
+        if self.force_cache:
             download_data = False
 
         if download_data:
@@ -102,24 +104,26 @@ class Instrument(metaclass=ABCMeta):
 class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
-    def __init__(self, symbol, force=False, cache=False,
-                 period=5, interval='1d'):
+    def __init__(self, symbol, force_download=False, force_cache=False,
+                 interval='1d', period=10):
         """Initialize the security.
 
-        Use the force and cache options to set download behavior.
+        Use force_download and force_cache to set download behavior.
         """
-        super().__init__(symbol, force, cache, period)
+        super().__init__(symbol, force_download, force_cache, interval, period)
+        if self.interval not in ["1d", "1wk", "1mo"]:
+            logging.info("incorrect interval: "
+                         "valid intervals are 1d, 1wk, 1mo")
+            raise ValueError()
+        self.symbol = symbol.lower().replace('.', '-')
+        self.symbol_file = os.path.join(self.historical_directory,
+                                        self.symbol
+                                        + '_' + self.interval
+                                        + '_yahoo'
+                                        + '.csv')
         self.api_url = ("https://query1.finance.yahoo.com/v7/finance/download/"
                         "%s?period1=%s&period2=%s&interval=%s"
                         "&events=history&crumb=%s")
-        self.symbol = symbol.upper().replace('.', '-')
-        self.symbol_file = os.path.join(self.historical_directory,
-                                        self.symbol + '.csv')
-        self.interval = interval
-
-    def __str__(self):
-        """Return the symbol of the security."""
-        return self.symbol
 
     def _get_cookie_crumb(self):
         """Return a tuple pair of cookie and crumb used in the request."""
@@ -145,9 +149,9 @@ class Security(Instrument):
         self.start = int(time.mktime(datetime.datetime(y, m, d).timetuple()))
         self.end = int(time.time())
         self.interval = self.interval
-        self.url = self.api_url % (self.symbol, self.start, self.end,
-                                   self.interval, self.crumb)
-        data = requests.get(self.url, cookies={'B': self.cookie})
+        url = self.api_url % (self.symbol, self.start, self.end,
+                              self.interval, self.crumb)
+        data = requests.get(url, cookies={'B': self.cookie})
         content = StringIO(data.content.decode("utf-8"))
         with open(self.symbol_file, 'w', newline='') as csvfile:
             for row in content.readlines():

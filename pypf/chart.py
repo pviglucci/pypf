@@ -12,14 +12,14 @@ class PFChart(object):
     TWOPLACES = Decimal('0.01')
 
     def __init__(self, security, period=1, box_size=.01, reversal=3,
-                 method='HL', style_output=False):
+                 method='HL', style=False):
         """Initialize common functionality."""
         self.security = security
         self.method = method
         self.period = period
         self.box_size = Decimal(box_size)
         self.reversal = int(reversal)
-        self.style_output = style_output
+        self.style = style
 
         self.historical_data = []
         self.chart_data = []
@@ -428,7 +428,7 @@ class PFChart(object):
         pass
 
     def _style(self, style, message):
-        if self.style_output:
+        if self.style:
             method = getattr(pypf.terminal_format, style)
             return method(message)
         else:
