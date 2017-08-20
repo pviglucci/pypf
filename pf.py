@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""This is the docstring."""
+"""Script to create point and figure charts at the command line."""
 from argparse import ArgumentParser
 from pypf.chart import PFChart
 from pypf.instrument import Security
