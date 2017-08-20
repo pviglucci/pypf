@@ -139,20 +139,11 @@ class Instrument(metaclass=ABCMeta):
 
         if download_data:
             logging.info('downloading historical data for ' + self.symbol)
-            try:
-                self._download_data()
-            except Exception:
-                # should be RemoteDataError if pandas worked on ios
-                logging.info('unable to download data for ' + self.symbol)
-                raise
+            self._download_data()
             csv_file = open(self.data_file, newline='')
         else:
             logging.info('using cached historical data for ' + self.symbol)
-            try:
-                csv_file = open(self.data_file, newline='')
-            except FileNotFoundError:
-                logging.info('no data exists in the cache for ' + self.symbol)
-                raise
+            csv_file = open(self.data_file, newline='')
 
         reader = csv.DictReader(csv_file)
         for row in reader:
