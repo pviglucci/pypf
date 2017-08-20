@@ -17,26 +17,97 @@ import time
 class Instrument(metaclass=ABCMeta):
     """Base class for all Instruments."""
 
-    # TODO(me) Add properties to access attributes.
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10):
+                 interval='1d', period=10, data_directory='~/.pypf/data',
+                 data_file=''):
         """Initialize the common functionality for all Instruments."""
         self.historical_data = OrderedDict()
-        self.home_directory = os.path.expanduser('~/.pypf')
-        self.historical_directory = os.path.join(self.home_directory, 'data')
-        if os.path.isdir(self.historical_directory) is False:
-            logging.info('creating data directory '
-                         + self.historical_directory)
-            os.makedirs(self.historical_directory)
-
-        self.force_download = force_download
+        self.data_directory = data_directory
+        self.data_file = data_file
         self.force_cache = force_cache
-        if interval not in ["1d", "1wk", "1mo"]:
-            logging.info("incorrect interval: "
-                         "valid intervals are 1d, 1wk, 1mo")
-            raise ValueError()
+        self.force_download = force_download
         self.interval = interval
         self.period = period
+        self.symbol = symbol
+
+    @property
+    def data_directory(self):
+        """Set the location to store historical data."""
+        return self._data_directory
+
+    @data_directory.setter
+    def data_directory(self, value):
+        value = os.path.expanduser(value)
+        if os.path.isdir(value) is False:
+            logging.info('creating data directory ' + value)
+            os.makedirs(value)
+        self._data_directory = value
+
+    @property
+    def data_file(self):
+        """Set the data file that contains the historical data."""
+        return self._data_file
+
+    @data_file.setter
+    def data_file(self, value):
+        self._data_file = value
+
+    @property
+    def force_cache(self):
+        """Force use of cached data."""
+        return self._force_cache
+
+    @force_cache.setter
+    def force_cache(self, value):
+        self._force_cache = value
+
+    @property
+    def force_download(self):
+        """Force download of data."""
+        return self._force_download
+
+    @force_download.setter
+    def force_download(self, value):
+        self._force_download = value
+
+    @property
+    def interval(self):
+        """Specify day (1d), week (1wk), or month (1mo) interval."""
+        return self._interval
+
+    @interval.setter
+    def interval(self, value):
+        if value not in ["1d", "1wk", "1mo"]:
+            raise ValueError("incorrect interval: "
+                             "valid intervals are 1d, 1wk, 1mo")
+        self._interval = value
+
+    @property
+    def period(self):
+        """Set the years of data to download."""
+        return self._period
+
+    @period.setter
+    def period(self, value):
+        if value <= 0:
+            raise ValueError('period must be greater than 0.')
+        self._period = value
+        now = datetime.datetime.now()
+        m = now.month
+        d = now.day
+        y = now.year - value
+        self._start_date = int(time.mktime(datetime
+                                           .datetime(y, m, d).timetuple()))
+        self._end_date = int(time.time())
+
+    @property
+    def symbol(self):
+        """Set the symbol of the instrument."""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, value):
+        self._symbol = value.lower()
 
     def populate_data(self):
         """Populate the instrument with data.
@@ -52,8 +123,8 @@ class Instrument(metaclass=ABCMeta):
         if self.force_download:
             download_data = True
         else:
-            if os.path.isfile(self.symbol_file):
-                modification_time = os.path.getmtime(self.symbol_file)
+            if os.path.isfile(self.data_file):
+                modification_time = os.path.getmtime(self.data_file)
                 last_modified_date = (datetime.date
                                       .fromtimestamp(modification_time))
                 today = datetime.datetime.now().date()
@@ -74,11 +145,11 @@ class Instrument(metaclass=ABCMeta):
                 # should be RemoteDataError if pandas worked on ios
                 logging.info('unable to download data for ' + self.symbol)
                 raise
-            csv_file = open(self.symbol_file, newline='')
+            csv_file = open(self.data_file, newline='')
         else:
             logging.info('using cached historical data for ' + self.symbol)
             try:
-                csv_file = open(self.symbol_file, newline='')
+                csv_file = open(self.data_file, newline='')
             except FileNotFoundError:
                 logging.info('no data exists in the cache for ' + self.symbol)
                 raise
@@ -110,20 +181,14 @@ class Security(Instrument):
 
     def __init__(self, symbol, force_download=False, force_cache=False,
                  interval='1d', period=10):
-        """Initialize the security.
-
-        Use force_download and force_cache to set download behavior.
-        """
+        """Initialize the security."""
         super().__init__(symbol, force_download, force_cache, interval, period)
-        self.symbol = symbol.lower().replace('.', '-')
-        self.symbol_file = os.path.join(self.historical_directory,
-                                        self.symbol
-                                        + '_' + self.interval
-                                        + '_yahoo'
-                                        + '.csv')
-        self.api_url = ("https://query1.finance.yahoo.com/v7/finance/download/"
-                        "%s?period1=%s&period2=%s&interval=%s"
-                        "&events=history&crumb=%s")
+        self.symbol = symbol.replace('.', '-')
+        self.data_file = os.path.join(self.data_directory,
+                                      self.symbol
+                                      + '_' + self.interval
+                                      + '_yahoo'
+                                      + '.csv')
 
     def _get_cookie_crumb(self):
         """Return a tuple pair of cookie and crumb used in the request."""
@@ -141,19 +206,15 @@ class Security(Instrument):
         return cookie, crumb
 
     def _download_data(self):
-        self.cookie, self.crumb = self._get_cookie_crumb()
-        now = datetime.datetime.now()
-        m = now.month
-        d = now.day
-        y = now.year - self.period
-        self.start = int(time.mktime(datetime.datetime(y, m, d).timetuple()))
-        self.end = int(time.time())
-        self.interval = self.interval
-        url = self.api_url % (self.symbol, self.start, self.end,
-                              self.interval, self.crumb)
-        data = requests.get(url, cookies={'B': self.cookie})
+        cookie, crumb = self._get_cookie_crumb()
+        api_url = ("https://query1.finance.yahoo.com/v7/finance/"
+                   "download/%s?period1=%s&period2=%s&interval=%s"
+                   "&events=history&crumb=%s")
+        url = api_url % (self.symbol, self._start_date, self._end_date,
+                         self.interval, crumb)
+        data = requests.get(url, cookies={'B': cookie})
         content = StringIO(data.content.decode("utf-8"))
-        with open(self.symbol_file, 'w', newline='') as csvfile:
+        with open(self.data_file, 'w', newline='') as csvfile:
             for row in content.readlines():
                 csvfile.write(row)
         return True
