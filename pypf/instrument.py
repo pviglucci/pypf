@@ -24,11 +24,11 @@ class Instrument(metaclass=ABCMeta):
         self._data_directory = ''
         self._data_file = ''
 
-        self.historical_data = OrderedDict()
         self.data_directory = data_directory
         self.data_file = data_file
         self.force_cache = force_cache
         self.force_download = force_download
+        self.historical_data = OrderedDict()
         self.interval = interval
         self.period = period
         self.symbol = symbol
