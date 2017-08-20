@@ -34,7 +34,7 @@ Installation
 
 Install using pip::
 
-    $ pip3 install pypf
+    $ pip install pypf
 
 Usage
 -----
