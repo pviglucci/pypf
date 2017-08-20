@@ -21,6 +21,9 @@ class Instrument(metaclass=ABCMeta):
                  interval='1d', period=10, data_directory='~/.pypf/data',
                  data_file=''):
         """Initialize the common functionality for all Instruments."""
+        self._data_directory = ''
+        self._data_file = ''
+
         self.historical_data = OrderedDict()
         self.data_directory = data_directory
         self.data_file = data_file
@@ -32,7 +35,7 @@ class Instrument(metaclass=ABCMeta):
 
     @property
     def data_directory(self):
-        """Set the location to store historical data."""
+        """Set the directory in which to store historical data."""
         return self._data_directory
 
     @data_directory.setter
@@ -42,15 +45,22 @@ class Instrument(metaclass=ABCMeta):
             logging.info('creating data directory ' + value)
             os.makedirs(value)
         self._data_directory = value
+        self._data_path = os.path.join(value, self.data_file)
 
     @property
     def data_file(self):
-        """Set the data file that contains the historical data."""
+        """Set the file name that contains the historical data."""
         return self._data_file
 
     @data_file.setter
     def data_file(self, value):
         self._data_file = value
+        self._data_path = os.path.join(self.data_directory, value)
+
+    @property
+    def data_path(self):
+        """Get the full path of the data file."""
+        return self._data_path
 
     @property
     def force_cache(self):
@@ -123,8 +133,8 @@ class Instrument(metaclass=ABCMeta):
         if self.force_download:
             download_data = True
         else:
-            if os.path.isfile(self.data_file):
-                modification_time = os.path.getmtime(self.data_file)
+            if os.path.isfile(self.data_path):
+                modification_time = os.path.getmtime(self.data_path)
                 last_modified_date = (datetime.date
                                       .fromtimestamp(modification_time))
                 today = datetime.datetime.now().date()
@@ -140,10 +150,10 @@ class Instrument(metaclass=ABCMeta):
         if download_data:
             logging.info('downloading historical data for ' + self.symbol)
             self._download_data()
-            csv_file = open(self.data_file, newline='')
+            csv_file = open(self.data_path, newline='')
         else:
             logging.info('using cached historical data for ' + self.symbol)
-            csv_file = open(self.data_file, newline='')
+            csv_file = open(self.data_path, newline='')
 
         reader = csv.DictReader(csv_file)
         for row in reader:
@@ -171,15 +181,17 @@ class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10):
+                 interval='1d', period=10, data_directory='~/.pypf/data',
+                 data_file=''):
         """Initialize the security."""
-        super().__init__(symbol, force_download, force_cache, interval, period)
+        super().__init__(symbol, force_download, force_cache,
+                         interval, period, data_directory,
+                         data_file)
         self.symbol = symbol.replace('.', '-')
-        self.data_file = os.path.join(self.data_directory,
-                                      self.symbol
-                                      + '_' + self.interval
-                                      + '_yahoo'
-                                      + '.csv')
+        self.data_file = (self.symbol
+                          + '_' + self.interval
+                          + '_yahoo'
+                          + '.csv')
 
     def _get_cookie_crumb(self):
         """Return a tuple pair of cookie and crumb used in the request."""
@@ -205,7 +217,7 @@ class Security(Instrument):
                          self.interval, crumb)
         data = requests.get(url, cookies={'B': cookie})
         content = StringIO(data.content.decode("utf-8"))
-        with open(self.data_file, 'w', newline='') as csvfile:
+        with open(self.data_path, 'w', newline='') as csvfile:
             for row in content.readlines():
                 csvfile.write(row)
         return True
