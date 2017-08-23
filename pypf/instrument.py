@@ -117,7 +117,7 @@ class Instrument(metaclass=ABCMeta):
 
     @symbol.setter
     def symbol(self, value):
-        self._symbol = value.lower()
+        self._symbol = value.upper()
 
     def populate_data(self):
         """Populate the instrument with data.
@@ -181,12 +181,10 @@ class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, data_directory='~/.pypf/data',
-                 data_file=''):
+                 interval='1d', period=10, data_directory='~/.pypf/data'):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
-                         interval, period, data_directory,
-                         data_file)
+                         interval, period, data_directory)
         self.symbol = symbol.replace('.', '-')
         self.data_file = (self.symbol
                           + '_' + self.interval
