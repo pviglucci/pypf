@@ -185,7 +185,7 @@ class Security(Instrument):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
                          interval, period, data_directory)
-        self.symbol = symbol.replace('.', '-')
+        self.symbol = self.symbol.replace('.', '-')
         self.data_file = (self.symbol
                           + '_' + self.interval
                           + '_yahoo'
