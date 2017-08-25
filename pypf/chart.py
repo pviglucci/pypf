@@ -216,6 +216,7 @@ class PFChart(object):
                     month = current_month
                 else:
                     # check for reversal
+                    x_scale_index = scale_index
                     scale_index = self._get_scale_index(day[self.low_field],
                                                         'o')
                     if index - scale_index >= self.reversal:
@@ -246,7 +247,7 @@ class PFChart(object):
                         month = current_month
                     else:
                         # no reversal - reset the scale_index
-                        scale_index -= 1
+                        scale_index = x_scale_index
             else:
                 # in an 'o' column
                 scale_index = self._get_scale_index(day[self.low_field], 'o')
@@ -273,6 +274,7 @@ class PFChart(object):
                     month = current_month
                 else:
                     # check for reversal
+                    o_scale_index = scale_index
                     scale_index = self._get_scale_index(day[self.high_field],
                                                         'x')
                     if scale_index - index >= self.reversal:
@@ -303,7 +305,7 @@ class PFChart(object):
                         month = current_month
                     else:
                         # no reversal - reset the scale_index
-                        scale_index += 1
+                        scale_index = o_scale_index
 
             # Store the meta data for the day
             status = self._get_status(signal, direction)
