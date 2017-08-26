@@ -77,6 +77,10 @@ def __get_option_parser():
                            action="store_true", dest="style",
                            help="use color and style in terminal output \
                                  [default: False]")
+    pf_parser.add_argument("--trend-lines",
+                           action="store_true", dest="trend_lines",
+                           help="draw support and resistance lines \
+                                 [default: False]")
     pf_parser.add_argument("symbol", metavar='SYMBOL',
                            help='the symbol of the security to chart')
 
@@ -97,12 +101,13 @@ def __process_options(options):
     method = options.method
     reversal = options.reversal
     style = options.style
+    trend_lines = options.trend_lines
     symbol = options.symbol
 
     security = Security(symbol, force_download, force_cache,
                         interval, period)
     chart = PFChart(security, duration, box_size, reversal,
-                    method, style)
+                    method, trend_lines, style)
     chart.create_chart(dump=True)
 
 

@@ -12,13 +12,14 @@ class PFChart(object):
     TWOPLACES = Decimal('0.01')
 
     def __init__(self, security, duration=1, box_size=.01, reversal=3,
-                 method='HL', style=False):
+                 method='HL', trend_lines=False, style=False):
         """Initialize common functionality."""
         self.security = security
         self.method = method
         self.duration = duration
         self.box_size = Decimal(box_size)
         self.reversal = int(reversal)
+        self.trend_lines = trend_lines
         self.style = style
 
         self.historical_data = []
@@ -232,7 +233,8 @@ class PFChart(object):
                             signal = 'sell'
 
                         prior_high_index = index
-                        self._resistance_lines.append([column_index, prior_high_index + 1])
+                        self._resistance_lines.append([column_index,
+                                                       prior_high_index + 1])
                         self.chart_data.append(column)
                         column_index += 1
                         column = OrderedDict()
@@ -291,7 +293,8 @@ class PFChart(object):
                             signal = 'buy'
 
                         prior_low_index = index
-                        self._support_lines.append([column_index, prior_low_index - 1])
+                        self._support_lines.append([column_index,
+                                                    prior_low_index - 1])
                         self.chart_data.append(column)
                         column_index += 1
                         column = OrderedDict()
@@ -329,34 +332,47 @@ class PFChart(object):
             self.chart_data.pop(1)
             for line in self._support_lines:
                 line[0] = line[0] - 1
-                
-        self._set_trend_lines()
+            for line in self._resistance_lines:
+                line[0] = line[0] - 1
+
+        if self.trend_lines:
+            self._set_trend_lines()
+
         return self.chart_data
+
+    def _is_complete_line(self, start_point, line_type='support'):
+        c_index = start_point[0]
+        s_index = start_point[1]
+        while c_index < len(self.chart_data):
+            if s_index in self.chart_data[c_index]:
+                return False
+            c_index += 1
+            if line_type == 'support':
+                s_index += 1
+            else:
+                s_index -= 1
+        return True
 
     def _set_trend_lines(self):
         for start_point in self._support_lines:
-            column_index = start_point[0]
-            scale_index = start_point[1]
-            column = self.chart_data[column_index]
-            trend_line = []
-            trend_line.append((column_index, scale_index))
-            good_line = True
-            while column_index < len(self.chart_data) - 1:
-                column_index += 1
-                scale_index += 1
-                column = self.chart_data[column_index]
-                if scale_index in column:
-                    good_line = False
-                    break
-                else:
-                    trend_line.append((column_index, scale_index))
-                                    
-            if good_line:
-                for point in trend_line:
-                    column_index = point[0]
-                    scale_index = point[1]
-                    column = self.chart_data[column_index]
-                    column[scale_index] = ['.', '']
+            c_index = start_point[0]
+            s_index = start_point[1]
+            if self._is_complete_line(start_point, 'support'):
+                while c_index < len(self.chart_data):
+                    self.chart_data[c_index][s_index] = [self._style('blue',
+                                                         '.'), '']
+                    c_index += 1
+                    s_index += 1
+
+        for start_point in self._resistance_lines:
+            c_index = start_point[0]
+            s_index = start_point[1]
+            if self._is_complete_line(start_point, 'resistance'):
+                while c_index < len(self.chart_data):
+                    self.chart_data[c_index][s_index] = [self._style('blue',
+                                                         '.'), '']
+                    c_index += 1
+                    s_index -= 1
 
     def _set_current_prices(self):
         day = next(reversed(self.historical_data))
