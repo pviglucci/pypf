@@ -47,6 +47,8 @@ class PFChart(object):
         self.current_scale_value = None
         self.current_direction = None
         self.current_close = None
+        self._support_lines = []
+        self._resistance_lines = []
 
         self.chart_meta_data = OrderedDict()
 
@@ -165,6 +167,8 @@ class PFChart(object):
     def _set_chart_data(self):
         self.chart_data = []
         self.chart_meta_data = OrderedDict()
+        self._support_lines = []
+        self._resistance_lines = []
         self.chart_data.append(self.scale)
 
         column = OrderedDict()
@@ -228,6 +232,7 @@ class PFChart(object):
                             signal = 'sell'
 
                         prior_high_index = index
+                        self._resistance_lines.append([column_index, prior_high_index + 1])
                         self.chart_data.append(column)
                         column_index += 1
                         column = OrderedDict()
@@ -286,6 +291,7 @@ class PFChart(object):
                             signal = 'buy'
 
                         prior_low_index = index
+                        self._support_lines.append([column_index, prior_low_index - 1])
                         self.chart_data.append(column)
                         column_index += 1
                         column = OrderedDict()
@@ -321,8 +327,36 @@ class PFChart(object):
 
         if len(self.chart_data[1]) < self.reversal:
             self.chart_data.pop(1)
-
+            for line in self._support_lines:
+                line[0] = line[0] - 1
+                
+        self._set_trend_lines()
         return self.chart_data
+
+    def _set_trend_lines(self):
+        for start_point in self._support_lines:
+            column_index = start_point[0]
+            scale_index = start_point[1]
+            column = self.chart_data[column_index]
+            trend_line = []
+            trend_line.append((column_index, scale_index))
+            good_line = True
+            while column_index < len(self.chart_data) - 1:
+                column_index += 1
+                scale_index += 1
+                column = self.chart_data[column_index]
+                if scale_index in column:
+                    good_line = False
+                    break
+                else:
+                    trend_line.append((column_index, scale_index))
+                                    
+            if good_line:
+                for point in trend_line:
+                    column_index = point[0]
+                    scale_index = point[1]
+                    column = self.chart_data[column_index]
+                    column[scale_index] = ['.', '']
 
     def _set_current_prices(self):
         day = next(reversed(self.historical_data))
