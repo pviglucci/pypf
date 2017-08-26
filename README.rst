@@ -6,28 +6,26 @@ Simple set of classes that can be used to generate point and figure charts.
 The package also includes a script (pf.py) that can be used to create charts
 at the command line that look like this::
 
-    bac  (2017-08-18 o: 23.56 h: 23.90 l: 23.45 c: 23.62)
+    BAC  (2017-08-25 o: 23.89 h: 24.07 l: 23.75 c: 23.77)
     1.00% box, 3 box reversal, HL method
-    signal: sell status: bear confirmed
+    signal: sell status: bear correction
 
-    25.93|                                                      |25.93
-    25.68|    x                                                 |25.68
-    25.42|    u d                                               |25.42
-    25.17|    u d                                     x         |25.17
-    24.92|    u d                                 x   x d       |24.92
-    24.68|    u o                                 7 d 8 d u     |24.68
-    24.43|  d u o                                 x d u d u d   |24.43
-    24.19|  d 3 o             x   x               x d u d u d   |24.19
-    23.95|  d   o             x d u d     x   u   x d u o   d   |23.95
-    23.71|      o     x   u   x d u d     x d u d x o       d   |23.71
-    23.48|      o     u 4 u d x d 5 d x   x d u d u         o   |<< 23.62
-    23.25|      o u   u d u d x o   d u d x d   d u             |23.25
-    23.02|      o u d u d   d u     d u d u     o u             |23.02
-    22.79|      o u d u     o u     d u d u     o               |22.79
-    22.56|      o   d u     o u     d   d u                     |22.56
-    22.34|          d u     o           d 6                     |22.34
-    22.12|          d                   d                       |22.12
-    21.90|                                                      |21.90
+    25.42|                                        .           |25.42
+    25.17|                                        x .         |25.17
+    24.92|  d                                 x   x d .       |24.92
+    24.68|  d                                 7 d 8 d u .     |24.68
+    24.43|  d                                 x d u d u d .   |24.43
+    24.19|  o             x   x               x d u d u d     |24.19
+    23.95|  o             x d u d     x   u   x d u o   d u   |<< 23.77
+    23.71|  o     x   u   x d u d     x d u d x o       d u   |23.71
+    23.48|  o     u 4 u d x d 5 d x   x d u d u         o u   |23.48
+    23.25|  o u   u d u d x o   d u d x d   d u         o .   |23.25
+    23.02|  o u d u d   d u     d u d u     o u         .     |23.02
+    22.79|  o u d u     o u     d u d u     o                 |22.79
+    22.56|  o   d u     o u     d   d u                       |22.56
+    22.34|      d u     o           d 6                       |22.34
+    22.12|      d                   d                         |22.12
+    21.90|                                                    |21.90
 
 Installation
 ------------
@@ -74,6 +72,7 @@ The pf command supports the following arguments::
 
     usage: pf.py pf [-h] [--box-size BOX_SIZE] [--duration DURATION]
                     [--method METHOD] [--reversal REVERSAL] [--style]
+                    [--trend-lines]
                     SYMBOL
 
     positional arguments:
@@ -86,6 +85,7 @@ The pf command supports the following arguments::
       --method METHOD      specify High/Low (HL) or Close (C) [default: HL]
       --reversal REVERSAL  set the box reversal [default: 3]
       --style              use color and style in terminal output [default: False]
+      --trend-lines        draw support and resistance lines [default: False]
 
 License
 -------

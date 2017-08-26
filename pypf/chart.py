@@ -11,8 +11,8 @@ class PFChart(object):
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, security, duration=1, box_size=.01, reversal=3,
-                 method='HL', trend_lines=False, style=False):
+    def __init__(self, security, box_size=.01, duration=1, method='HL',
+                 reversal=3, style=False, trend_lines=False):
         """Initialize common functionality."""
         self.security = security
         self.method = method

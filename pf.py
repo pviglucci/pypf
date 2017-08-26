@@ -106,8 +106,8 @@ def __process_options(options):
 
     security = Security(symbol, force_download, force_cache,
                         interval, period)
-    chart = PFChart(security, duration, box_size, reversal,
-                    method, trend_lines, style)
+    chart = PFChart(security, box_size, duration, method,
+                    reversal, style, trend_lines)
     chart.create_chart(dump=True)
 
 
