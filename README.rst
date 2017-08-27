@@ -51,7 +51,7 @@ To use at the command line::
 
 pf.py supports the following arguments::
 
-    usage: pf.py [-h] [-v] [--interval INTERVAL] [--force-cache]
+    usage: pf.py [-h] [-d] [--interval INTERVAL] [--force-cache]
                  [--force-download] [--period PERIOD]
                  command ...
 
@@ -61,7 +61,7 @@ pf.py supports the following arguments::
 
     optional arguments:
       -h, --help           show this help message and exit
-      -v, --verbose        increase status messages to stdout
+      -d, --debug          print debug messages to stdout
       --interval INTERVAL  specify day (1d), week (1wk), or month (1mo) interval
                            [default: 1d]
       --force-cache        force use of cached data [default: False]

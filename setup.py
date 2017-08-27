@@ -10,7 +10,7 @@ with open('README.rst') as f:
 
 
 setup(name='pypf',
-      version='0.9.4',
+      version='0.9.5',
       description='Create point and figure charts',
       long_description=long_description,
       classifiers=[
