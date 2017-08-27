@@ -2,10 +2,10 @@
 from collections import OrderedDict
 from decimal import Decimal
 from io import StringIO
-from pypf.log import Log
 
 import csv
 import datetime
+import logging
 import os
 import re
 import requests
@@ -16,9 +16,14 @@ class Instrument(object):
     """Base class for all Instruments."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, log_level=30,
+                 interval='1d', period=10, debug=False,
                  data_directory='~/.pypf/data', data_file=''):
         """Initialize the common functionality for all Instruments."""
+        self._log = logging.getLogger(self.__class__.__name__)
+        if debug is True:
+            self._log.setLevel(logging.DEBUG)
+            self._log.debug(self)
+
         self._data_directory = ''
         self._data_file = ''
 
@@ -30,7 +35,6 @@ class Instrument(object):
         self.interval = interval
         self.period = period
         self.symbol = symbol
-        self._log = Log('pypf.Instrument', log_level)
 
     @property
     def data_directory(self):
@@ -41,10 +45,13 @@ class Instrument(object):
     def data_directory(self, value):
         value = os.path.expanduser(value)
         if os.path.isdir(value) is False:
-            self._l.info('creating data directory ' + value)
+            self._log.info('creating data directory ' + value)
             os.makedirs(value)
         self._data_directory = value
         self._data_path = os.path.join(value, self.data_file)
+        self._log.debug('set self._data_directory to '
+                        + str(self._data_directory))
+        self._log.debug('updating self._data_path to ' + str(self._data_path))
 
     @property
     def data_file(self):
@@ -55,6 +62,9 @@ class Instrument(object):
     def data_file(self, value):
         self._data_file = value
         self._data_path = os.path.join(self.data_directory, value)
+        self._log.debug('set self._data_file to '
+                        + str(self._data_file))
+        self._log.debug('updating self._data_path to ' + str(self._data_path))
 
     @property
     def data_path(self):
@@ -69,6 +79,8 @@ class Instrument(object):
     @force_cache.setter
     def force_cache(self, value):
         self._force_cache = value
+        self._log.debug('set self._force_cache to '
+                        + str(self._force_cache))
 
     @property
     def force_download(self):
@@ -78,6 +90,8 @@ class Instrument(object):
     @force_download.setter
     def force_download(self, value):
         self._force_download = value
+        self._log.debug('set self._force_download to '
+                        + str(self._force_download))
 
     @property
     def interval(self):
@@ -90,6 +104,8 @@ class Instrument(object):
             raise ValueError("incorrect interval: "
                              "valid intervals are 1d, 1wk, 1mo")
         self._interval = value
+        self._log.debug('set self._interval to '
+                        + str(self._interval))
 
     @property
     def period(self):
@@ -108,6 +124,12 @@ class Instrument(object):
         self._start_date = int(time.mktime(datetime
                                            .datetime(y, m, d).timetuple()))
         self._end_date = int(time.time())
+        self._log.debug('set self._period to '
+                        + str(self._period))
+        self._log.debug('updating self._start_date to '
+                        + str(self._start_date))
+        self._log.debug('updating self._end_date to '
+                        + str(self._end_date))
 
     @property
     def symbol(self):
@@ -117,6 +139,8 @@ class Instrument(object):
     @symbol.setter
     def symbol(self, value):
         self._symbol = value.upper()
+        self._log.debug('set self._symbol to '
+                        + str(self._symbol))
 
     def populate_data(self):
         """Populate the instrument with data.
@@ -179,24 +203,23 @@ class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, log_level=30,
+                 interval='1d', period=10, debug=False,
                  data_directory='~/.pypf/data'):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
-                         interval, period, log_level, data_directory)
+                         interval, period, debug, data_directory)
+        self._log.info('formatting symbol for yahoo')
         self.symbol = self.symbol.replace('.', '-')
         self.data_file = (self.symbol
                           + '_' + self.interval
                           + '_yahoo'
                           + '.csv')
 
-        self._log = Log('pypf.Security', log_level)
-
     def _get_cookie_crumb(self):
         """Return a tuple pair of cookie and crumb used in the request."""
         self._log.info('getting cookie and crumb')
         url = 'https://finance.yahoo.com/quote/%s/history' % (self.symbol)
-        self._log.info(url)
+        self._log.debug(url)
         r = requests.get(url)
         txt = r.content
         cookie = r.cookies['B']
@@ -211,13 +234,15 @@ class Security(Instrument):
 
     def _download_data(self):
         cookie, crumb = self._get_cookie_crumb()
+        self._log.debug('cookie is ' + str(cookie))
+        self._log.debug('crumb is ' + str(crumb))
         api_url = ("https://query1.finance.yahoo.com/v7/finance/"
                    "download/%s?period1=%s&period2=%s&interval=%s"
                    "&events=history&crumb=%s")
         url = api_url % (self.symbol, self._start_date, self._end_date,
                          self.interval, crumb)
         self._log.info('fetching data')
-        self._log.info(url)
+        self._log.debug(url)
         data = requests.get(url, cookies={'B': cookie})
         content = StringIO(data.content.decode("utf-8"))
         self._log.info('saving data to ' + self.data_path)

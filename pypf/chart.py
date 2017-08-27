@@ -2,8 +2,8 @@
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
-from pypf.log import Log
 
+import logging
 import pypf.terminal_format
 
 
@@ -14,7 +14,7 @@ class PFChart(object):
 
     def __init__(self, security, box_size=.01, duration=1, method='HL',
                  reversal=3, style=False, trend_lines=False,
-                 log_level=30):
+                 debug=False):
         """Initialize common functionality."""
         self.security = security
         self.method = method
@@ -55,7 +55,10 @@ class PFChart(object):
 
         self.chart_meta_data = OrderedDict()
 
-        self._log = Log('pypf.PFChart', log_level)
+        self._log = logging.getLogger(self.__class__.__name__)
+        if debug is True:
+            self._log.setLevel(logging.DEBUG)
+            self._log.debug(self)
 
     def create_chart(self, dump=False):
         """Populate the data and create the chart."""

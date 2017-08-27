@@ -3,7 +3,6 @@
 from argparse import ArgumentParser
 from pypf.chart import PFChart
 from pypf.instrument import Security
-from pypf.log import Log
 
 
 def main():
@@ -15,11 +14,9 @@ def main():
 
 def __get_option_parser():
     parser = ArgumentParser()
-    parser.add_argument("-v", "--verbose",
-                        action="store_const",
-                        const=20, dest="verbosity",
-                        default=30,
-                        help="increase status messages to stdout")
+    parser.add_argument("-d", "--debug",
+                        action="store_true", dest="debug",
+                        help="print debug messages to stdout")
     parser.add_argument("--interval",
                         action="store",
                         dest="interval",
@@ -85,11 +82,7 @@ def __get_option_parser():
 
 
 def __process_options(options):
-    log = Log('pf.py', options.verbosity)
-
-    for option in vars(options):
-        log.info(option + ': ' + str(vars(options)[option]))
-
+    debug = options.debug
     interval = options.interval
     force_download = options.force_download
     force_cache = options.force_cache
@@ -104,9 +97,9 @@ def __process_options(options):
     symbol = options.symbol
 
     security = Security(symbol, force_download, force_cache,
-                        interval, period, options.verbosity)
+                        interval, period, debug)
     chart = PFChart(security, box_size, duration, method,
-                    reversal, style, trend_lines, options.verbosity)
+                    reversal, style, trend_lines, debug)
     chart.create_chart(dump=True)
 
 
