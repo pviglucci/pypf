@@ -2,6 +2,7 @@
 from collections import OrderedDict
 from datetime import datetime
 from decimal import Decimal
+from pypf.log import Log
 
 import pypf.terminal_format
 
@@ -12,7 +13,8 @@ class PFChart(object):
     TWOPLACES = Decimal('0.01')
 
     def __init__(self, security, box_size=.01, duration=1, method='HL',
-                 reversal=3, style=False, trend_lines=False):
+                 reversal=3, style=False, trend_lines=False,
+                 log_level=30):
         """Initialize common functionality."""
         self.security = security
         self.method = method
@@ -52,6 +54,8 @@ class PFChart(object):
         self._resistance_lines = []
 
         self.chart_meta_data = OrderedDict()
+
+        self._log = Log('pypf.PFChart', log_level)
 
     def create_chart(self, dump=False):
         """Populate the data and create the chart."""
@@ -166,6 +170,7 @@ class PFChart(object):
         return status
 
     def _set_chart_data(self):
+        self._log.info('generating chart')
         self.chart_data = []
         self.chart_meta_data = OrderedDict()
         self._support_lines = []
@@ -400,6 +405,7 @@ class PFChart(object):
         self.current_direction = current_meta['direction']
 
     def _set_historical_data(self):
+        self._log.info('setting historical data')
         if len(self.security.historical_data) == 0:
             self.security.populate_data()
 

@@ -1,25 +1,23 @@
 """Classes to represent financial instruments."""
-from abc import ABCMeta
-from abc import abstractmethod
 from collections import OrderedDict
 from decimal import Decimal
 from io import StringIO
+from pypf.log import Log
 
 import csv
 import datetime
-import logging
 import os
 import re
 import requests
 import time
 
 
-class Instrument(metaclass=ABCMeta):
+class Instrument(object):
     """Base class for all Instruments."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, data_directory='~/.pypf/data',
-                 data_file=''):
+                 interval='1d', period=10, log_level=30,
+                 data_directory='~/.pypf/data', data_file=''):
         """Initialize the common functionality for all Instruments."""
         self._data_directory = ''
         self._data_file = ''
@@ -32,6 +30,7 @@ class Instrument(metaclass=ABCMeta):
         self.interval = interval
         self.period = period
         self.symbol = symbol
+        self._log = Log('pypf.Instrument', log_level)
 
     @property
     def data_directory(self):
@@ -42,7 +41,7 @@ class Instrument(metaclass=ABCMeta):
     def data_directory(self, value):
         value = os.path.expanduser(value)
         if os.path.isdir(value) is False:
-            logging.info('creating data directory ' + value)
+            self._l.info('creating data directory ' + value)
             os.makedirs(value)
         self._data_directory = value
         self._data_path = os.path.join(value, self.data_file)
@@ -148,11 +147,11 @@ class Instrument(metaclass=ABCMeta):
             download_data = False
 
         if download_data:
-            logging.info('downloading historical data for ' + self.symbol)
+            self._log.info('downloading data for ' + self.symbol)
             self._download_data()
             csv_file = open(self.data_path, newline='')
         else:
-            logging.info('using cached historical data for ' + self.symbol)
+            self._log.info('using cached data for ' + self.symbol)
             csv_file = open(self.data_path, newline='')
 
         reader = csv.DictReader(csv_file)
@@ -166,7 +165,6 @@ class Instrument(metaclass=ABCMeta):
             row.pop('Adj Close', None)
             self.historical_data[row['Date']] = row
 
-    @abstractmethod
     def _download_data(self):
         """To be implemented in derived classes.
 
@@ -174,26 +172,31 @@ class Instrument(metaclass=ABCMeta):
         includes an Adjusted Close field. If the data is already Adjusted
         then include Adjusted Close field that equals the Close field.
         """
-        pass
+        raise
 
 
 class Security(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, data_directory='~/.pypf/data'):
+                 interval='1d', period=10, log_level=30,
+                 data_directory='~/.pypf/data'):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
-                         interval, period, data_directory)
+                         interval, period, log_level, data_directory)
         self.symbol = self.symbol.replace('.', '-')
         self.data_file = (self.symbol
                           + '_' + self.interval
                           + '_yahoo'
                           + '.csv')
 
+        self._log = Log('pypf.Security', log_level)
+
     def _get_cookie_crumb(self):
         """Return a tuple pair of cookie and crumb used in the request."""
+        self._log.info('getting cookie and crumb')
         url = 'https://finance.yahoo.com/quote/%s/history' % (self.symbol)
+        self._log.info(url)
         r = requests.get(url)
         txt = r.content
         cookie = r.cookies['B']
@@ -213,8 +216,11 @@ class Security(Instrument):
                    "&events=history&crumb=%s")
         url = api_url % (self.symbol, self._start_date, self._end_date,
                          self.interval, crumb)
+        self._log.info('fetching data')
+        self._log.info(url)
         data = requests.get(url, cookies={'B': cookie})
         content = StringIO(data.content.decode("utf-8"))
+        self._log.info('saving data to ' + self.data_path)
         with open(self.data_path, 'w', newline='') as csvfile:
             for row in content.readlines():
                 csvfile.write(row)
