@@ -2,7 +2,8 @@
 """Script to create point and figure charts at the command line."""
 from argparse import ArgumentParser
 from pypf.chart import PFChart
-from pypf.instrument import Security
+from pypf.instrument import GoogleSecurity
+from pypf.instrument import YahooSecurity
 
 
 def main():
@@ -35,6 +36,13 @@ def __get_option_parser():
                         type=int, default=10,
                         metavar="PERIOD",
                         help="set the years of data to download \
+                             [default: %(default)s]")
+    parser.add_argument("--provider",
+                        action="store",
+                        dest="provider",
+                        choices=['google', 'yahoo'], default='yahoo',
+                        metavar="PROVIDER",
+                        help="specify the data provider (yahoo or google) \
                              [default: %(default)s]")
 
     # Top level commands
@@ -96,12 +104,15 @@ def __process_options(options):
     trend_lines = options.trend_lines
     symbol = options.symbol
 
-    security = Security(symbol, force_download, force_cache,
-                        interval, period, debug)
+    if options.provider == 'google':
+        security = GoogleSecurity(symbol, force_download, force_cache,
+                                  interval, period, debug)
+    else:
+        security = YahooSecurity(symbol, force_download, force_cache,
+                                 interval, period, debug)
     chart = PFChart(security, box_size, duration, method,
                     reversal, style, trend_lines, debug)
     chart.create_chart(dump=True)
-
 
 if __name__ == "__main__":
     main()

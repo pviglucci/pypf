@@ -11,6 +11,8 @@ import re
 import requests
 import time
 
+import urllib.parse
+
 
 class Instrument(object):
     """Base class for all Instruments."""
@@ -199,7 +201,7 @@ class Instrument(object):
         raise
 
 
-class Security(Instrument):
+class YahooSecurity(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
@@ -249,4 +251,68 @@ class Security(Instrument):
         with open(self.data_path, 'w', newline='') as csvfile:
             for row in content.readlines():
                 csvfile.write(row)
+        return True
+
+
+class GoogleSecurity(Instrument):
+    """Security instrument that uses Yahoo as the datasource."""
+
+    def __init__(self, symbol, force_download=False, force_cache=False,
+                 interval='1d', period=10, debug=False,
+                 data_directory='~/.pypf/data'):
+        """Initialize the security."""
+        super().__init__(symbol, force_download, force_cache,
+                         interval, period, debug, data_directory)
+        if self.interval != '1d':
+            self._log.warning('google only suports daily historical data')
+            self.interval = '1d'
+
+        self.data_file = (self.symbol
+                          + '_' + self.interval
+                          + '_google'
+                          + '.csv')
+
+    def _download_data(self):
+        api_url = ('http://www.google.com/finance/historical?')
+        params = {
+            'q': self.symbol,
+            'startdate':
+                datetime.datetime
+                .utcfromtimestamp(self._start_date).strftime('%b %d, %Y'),
+            'enddate':
+                datetime.datetime
+                .utcfromtimestamp(self._end_date).strftime('%b %d, %Y'),
+            'output': "csv"
+        }
+        url = api_url + urllib.parse.urlencode(params)
+        self._log.info('fetching data')
+        self._log.debug(url)
+        data = requests.get(url)
+        content = StringIO(data.content.decode("utf-8"))
+        self._log.info('saving data to ' + self.data_path)
+        lines = content.readlines()
+        lines.reverse()
+        lines.pop()
+        with open(self.data_path, 'w', newline='') as csvfile:
+            csvfile.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
+            for row in lines:
+                fields = row.split(',')
+                # Add the Adj Close
+                fields.insert(5, fields[4])
+                # Format the date
+                fields[0] = (datetime.datetime
+                             .strptime(fields[0], '%d-%b-%y')
+                             .strftime('%Y-%m-%d'))
+                # Check for missing data
+                missing_data = False
+                for field in fields:
+                    if field == '-':
+                        missing_data = True
+                        break
+                if missing_data is True:
+                    self._log.warning('Missing data on ' + fields[0])
+                    continue
+                else:
+                    new_row = ','.join(fields)
+                    csvfile.write(new_row)
         return True
