@@ -273,6 +273,7 @@ class GoogleSecurity(Instrument):
                           + '.csv')
 
     def _download_data(self):
+        # Download data from Google and transform into Yahoo format
         api_url = ('http://www.google.com/finance/historical?')
         params = {
             'q': self.symbol,
@@ -285,32 +286,43 @@ class GoogleSecurity(Instrument):
             'output': "csv"
         }
         url = api_url + urllib.parse.urlencode(params)
+
         self._log.info('fetching data')
         self._log.debug(url)
         data = requests.get(url)
         content = StringIO(data.content.decode("utf-8"))
-        self._log.info('saving data to ' + self.data_path)
         lines = content.readlines()
+
+        # Google data is in the opposite order of what we want
+        # Once reversed we can pop off the header row
         lines.reverse()
         lines.pop()
+
+        self._log.info('saving data to ' + self.data_path)
         with open(self.data_path, 'w', newline='') as csvfile:
             csvfile.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
             for row in lines:
                 fields = row.split(',')
-                # Add the Adj Close
+
+                # Google data is already adjusted so lacks an Adj Close field
+                # Add the Adj Close field and set equal to the Close
                 fields.insert(5, fields[4])
+
                 # Format the date
                 fields[0] = (datetime.datetime
                              .strptime(fields[0], '%d-%b-%y')
                              .strftime('%Y-%m-%d'))
+
                 # Check for missing data
                 missing_data = False
                 for field in fields:
                     if field == '-':
                         missing_data = True
                         break
+
                 if missing_data is True:
                     self._log.warning('Missing data on ' + fields[0])
+                    # Skip the day
                     continue
                 else:
                     new_row = ','.join(fields)
