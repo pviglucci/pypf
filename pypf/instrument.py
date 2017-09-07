@@ -287,7 +287,6 @@ class GoogleSecurity(Instrument):
         }
         url = api_url + urllib.parse.urlencode(params)
 
-        self._log.info('fetching data')
         self._log.debug(url)
         data = requests.get(url)
         content = StringIO(data.content.decode("utf-8"))

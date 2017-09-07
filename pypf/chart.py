@@ -55,10 +55,21 @@ class PFChart(object):
 
         self.chart_meta_data = OrderedDict()
 
+        self._chart = ''
+
         self._log = logging.getLogger(self.__class__.__name__)
         if debug is True:
             self._log.setLevel(logging.DEBUG)
             self._log.debug(self)
+
+    @property
+    def chart(self):
+        """Get the chart."""
+        return self._chart
+
+    @chart.setter
+    def chart(self, value):
+        self._chart = value
 
     def create_chart(self, dump=False):
         """Populate the data and create the chart."""
@@ -66,9 +77,9 @@ class PFChart(object):
         self._set_price_fields()
         self._set_scale()
         self._set_chart_data()
+        self.chart = self._get_chart()
         if dump:
-            chart = self._get_chart()
-            print(chart)
+            print(self.chart)
 
     def _get_chart(self):
         self._set_current_state()
@@ -359,7 +370,10 @@ class PFChart(object):
                 s_index += 1
             else:
                 s_index -= 1
-        return True
+        if c_index - start_point[0] > 2:
+            return True
+        else:
+            return False
 
     def _set_trend_lines(self):
         for start_point in self._support_lines:
