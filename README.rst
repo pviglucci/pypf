@@ -47,12 +47,12 @@ To use in a program, simply do::
 
 To use at the command line::
 
-    $ pf.py -v pf --duration 1 --box-size .01 --reversal 3 AAPL
+    $ pf.py -d pf --duration 1 --box-size .01 --reversal 3 AAPL
 
 pf.py supports the following arguments::
 
     usage: pf.py [-h] [-d] [--interval INTERVAL] [--force-cache]
-                 [--force-download] [--period PERIOD]
+                 [--force-download] [--period PERIOD] [--provider PROVIDER]
                  command ...
 
     positional arguments:
@@ -67,6 +67,8 @@ pf.py supports the following arguments::
       --force-cache        force use of cached data [default: False]
       --force-download     force download of data [default: False]
       --period PERIOD      set the years of data to download [default: 10]
+      --provider PROVIDER  specify the data provider (yahoo or google) [default:
+                           yahoo]
 
 The pf command supports the following arguments::
 
