@@ -32,7 +32,7 @@ Installation
 
 Install using pip::
 
-    $ pip install pypf
+    $ pip3 install --user pypf
 
 Usage
 -----
