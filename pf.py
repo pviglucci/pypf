@@ -17,7 +17,7 @@ def __get_option_parser():
     parser = ArgumentParser()
     parser.add_argument("-d", "--debug",
                         action="store_true", dest="debug",
-                        help="print debug messages to stdout")
+                        help="print debug messages to stderr")
     parser.add_argument("--interval",
                         action="store",
                         dest="interval",
@@ -57,6 +57,10 @@ def __get_option_parser():
                            type=float, default=.01,
                            metavar="BOX_SIZE",
                            help="set the %% box size [default: %(default)s]")
+    pf_parser.add_argument("--dump-meta-data",
+                           action="store_true", dest="dump_meta_data",
+                           help="print chart meta data to stdout \
+                                 [default: False]")
     pf_parser.add_argument("--duration",
                            action="store", dest="duration",
                            type=float, default=1,
@@ -78,6 +82,10 @@ def __get_option_parser():
     pf_parser.add_argument("--style",
                            action="store_true", dest="style",
                            help="use color and style in terminal output \
+                                 [default: False]")
+    pf_parser.add_argument("--suppress-chart",
+                           action="store_true", dest="suppress_chart",
+                           help="do not print the chart to stdout \
                                  [default: False]")
     pf_parser.add_argument("--trend-lines",
                            action="store_true", dest="trend_lines",
@@ -112,7 +120,12 @@ def __process_options(options):
                                  interval, period, debug)
     chart = PFChart(security, box_size, duration, method,
                     reversal, style, trend_lines, debug)
-    chart.create_chart(dump=True)
+    chart.create_chart()
+    if options.suppress_chart is False:
+        print(chart.chart)
+    if options.dump_meta_data is True:
+        for day in chart.chart_meta_data:
+            print(chart.chart_meta_data[day])
 
 if __name__ == "__main__":
     main()

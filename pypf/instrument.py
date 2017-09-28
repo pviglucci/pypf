@@ -35,7 +35,7 @@ class Instrument(object):
         self.force_download = force_download
         self.historical_data = OrderedDict()
         self.interval = interval
-        self.period = period
+        self.period = int(period)
         self.symbol = symbol
 
     @property
@@ -187,7 +187,7 @@ class Instrument(object):
             row['High'] = Decimal(row['High']) * factor
             row['Low'] = Decimal(row['Low']) * factor
             row['Close'] = Decimal(row['Close']) * factor
-            row['Volume'] = Decimal(row['Volume'])
+            row['Volume'] = int(row['Volume'])
             row.pop('Adj Close', None)
             self.historical_data[row['Date']] = row
 
