@@ -19,8 +19,8 @@ at the command line that look like this::
     23.95|  o             x d u d     x   u   x d u o   d u   |<< 23.77
     23.71|  o     x   u   x d u d     x d u d x o       d u   |23.71
     23.48|  o     u 4 u d x d 5 d x   x d u d u         o u   |23.48
-    23.25|  o u   u d u d x o   d u d x d   d u         o .   |23.25
-    23.02|  o u d u d   d u     d u d u     o u         .     |23.02
+    23.25|  o u   u d u d x o   d u d x d   d u         o     |23.25
+    23.02|  o u d u d   d u     d u d u     o u               |23.02
     22.79|  o u d u     o u     d u d u     o                 |22.79
     22.56|  o   d u     o u     d   d u                       |22.56
     22.34|      d u     o           d 6                       |22.34
@@ -40,10 +40,11 @@ Usage
 To use in a program, simply do::
 
     from pypf.chart import PFChart
-    from pypf.instrument import Security
-    security = Security(symbol, force_download, force_cache, interval, period)
-    chart = PFChart(security, duration, box_size, reversal, method, style)
-    chart.create_chart(dump=True)
+    from pypf.instrument import YahooSecurity
+    i = YahooSecurity(symbol, force_download, force_cache, interval, period, debug)
+    c = PFChart(i, box_size, duration, method, reversal, style, trend_lines, debug)
+    c.create_chart()
+    print(c.chart)
 
 To use at the command line::
 
@@ -72,9 +73,9 @@ pf.py supports the following arguments::
 
 The pf command supports the following arguments::
 
-    usage: pf.py pf [-h] [--box-size BOX_SIZE] [--duration DURATION]
-                    [--method METHOD] [--reversal REVERSAL] [--style]
-                    [--trend-lines]
+    usage: pf.py pf [-h] [--box-size BOX_SIZE] [--dump-meta-data]
+                    [--duration DURATION] [--method METHOD] [--reversal REVERSAL]
+                    [--style] [--suppress-chart] [--trend-lines]
                     SYMBOL
 
     positional arguments:
@@ -83,10 +84,12 @@ The pf command supports the following arguments::
     optional arguments:
       -h, --help           show this help message and exit
       --box-size BOX_SIZE  set the % box size [default: 0.01]
+      --dump-meta-data     print chart meta data to stdout [default: False]
       --duration DURATION  set the duration in years for the chart [default: 1]
       --method METHOD      specify High/Low (HL) or Close (C) [default: HL]
       --reversal REVERSAL  set the box reversal [default: 3]
       --style              use color and style in terminal output [default: False]
+      --suppress-chart     do not print the chart to stdout [default: False]
       --trend-lines        draw support and resistance lines [default: False]
 
 License
