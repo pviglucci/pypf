@@ -182,21 +182,20 @@ class Instrument(object):
 
         reader = csv.DictReader(csv_file)
         for row in reader:
-            factor = Decimal(row['Adj Close']) / Decimal(row['Close'])
-            row['Open'] = Decimal(row['Open']) * factor
-            row['High'] = Decimal(row['High']) * factor
-            row['Low'] = Decimal(row['Low']) * factor
-            row['Close'] = Decimal(row['Close']) * factor
+            row['Open'] = Decimal(row['Open'])
+            row['High'] = Decimal(row['High'])
+            row['Low'] = Decimal(row['Low'])
+            row['Close'] = Decimal(row['Close'])
             row['Volume'] = int(row['Volume'])
-            row.pop('Adj Close', None)
             self.historical_data[row['Date']] = row
 
     def _download_data(self):
         """To be implemented in derived classes.
 
-        Data must be stored in a csv file that follows the Yahoo format, which
-        includes an Adjusted Close field. If the data is already Adjusted
-        then include Adjusted Close field that equals the Close field.
+        Data must be stored in a csv file with the following heading:
+        Date,Open,High,Low,Close,Volume
+        Make any adjustments to the data before saving the data
+        to the csv file.
         """
         raise
 
@@ -213,7 +212,6 @@ class YahooSecurity(Instrument):
         self._log.info('formatting symbol for yahoo')
         self.symbol = self.symbol.replace('.', '-')
         self.data_file = (self.symbol
-                          + '_' + self.interval
                           + '_yahoo'
                           + '.csv')
 
@@ -226,7 +224,6 @@ class YahooSecurity(Instrument):
         txt = r.content
         cookie = r.cookies['B']
         pattern = re.compile('.*"CrumbStore":\{"crumb":"(?P<crumb>[^"]+)"\}')
-
         for line in txt.splitlines():
             m = pattern.match(line.decode("utf-8"))
             if m is not None:
@@ -249,8 +246,23 @@ class YahooSecurity(Instrument):
         content = StringIO(data.content.decode("utf-8"))
         self._log.info('saving data to ' + self.data_path)
         with open(self.data_path, 'w', newline='') as csvfile:
+            first = True
             for row in content.readlines():
-                csvfile.write(row)
+                if first is True:
+                    csvfile.write("Date,Open,High,Low,Close,Volume\n")
+                    first = False
+                    continue
+                fields = row.split(',')
+                new_row = []
+                factor = Decimal(fields[5]) / Decimal(fields[4])
+                new_row.append(str(fields[0]))
+                new_row.append(str(Decimal(fields[1]) * factor))
+                new_row.append(str(Decimal(fields[2]) * factor))
+                new_row.append(str(Decimal(fields[3]) * factor))
+                new_row.append(str(Decimal(fields[4]) * factor))
+                new_row.append(str(int(fields[6])))
+                write_row = ','.join(new_row) + "\n"
+                csvfile.write(write_row)
         return True
 
 
@@ -263,12 +275,8 @@ class GoogleSecurity(Instrument):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
                          interval, period, debug, data_directory)
-        if self.interval != '1d':
-            self._log.warning('google only suports daily historical data')
-            self.interval = '1d'
 
         self.data_file = (self.symbol
-                          + '_' + self.interval
                           + '_google'
                           + '.csv')
 
@@ -299,13 +307,9 @@ class GoogleSecurity(Instrument):
 
         self._log.info('saving data to ' + self.data_path)
         with open(self.data_path, 'w', newline='') as csvfile:
-            csvfile.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
+            csvfile.write("Date,Open,High,Low,Close,Volume\n")
             for row in lines:
                 fields = row.split(',')
-
-                # Google data is already adjusted so lacks an Adj Close field
-                # Add the Adj Close field and set equal to the Close
-                fields.insert(5, fields[4])
 
                 # Format the date
                 fields[0] = (datetime.datetime
