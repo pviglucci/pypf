@@ -21,7 +21,7 @@ def __get_option_parser():
     parser.add_argument("--interval",
                         action="store",
                         dest="interval",
-                        choices=['1d', '1wk', '1mo'], default='1d',
+                        choices=['d', 'w', 'm'], default='d',
                         metavar="INTERVAL",
                         help="specify day (1d), week (1wk), or month (1mo) \
                              interval [default: %(default)s]")
@@ -70,9 +70,9 @@ def __get_option_parser():
     pf_parser.add_argument("--method",
                            action="store",
                            dest="method",
-                           choices=['HL', 'C'], default='HL',
+                           choices=['hl', 'c'], default='hl',
                            metavar="METHOD",
-                           help="specify High/Low (HL) or Close (C) \
+                           help="specify High/Low (hl) or Close (c) \
                                  [default: %(default)s]")
     pf_parser.add_argument("--reversal",
                            action="store", dest="reversal",

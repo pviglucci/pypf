@@ -12,7 +12,7 @@ class PFChart(object):
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, instrument, box_size=.01, duration=1.0, method='HL',
+    def __init__(self, instrument, box_size=.01, duration=1.0, method='hl',
                  reversal=3, style=False, trend_lines=False,
                  debug=False):
         """Initialize common functionality."""
@@ -76,9 +76,9 @@ class PFChart(object):
 
     @method.setter
     def method(self, value):
-        if value not in ["HL", "C"]:
+        if value not in ["hl", "c"]:
             raise ValueError("incorrect method: "
-                             "valid methods are HL, C")
+                             "valid methods are hl, c")
         self._method = value
         self._log.debug('set self._method to ' + self._method)
 
@@ -500,16 +500,18 @@ class PFChart(object):
 
     def _set_historical_data(self):
         self._log.info('setting historical data')
-        if len(self.instrument.historical_data) == 0:
+        if len(self.instrument.daily_historical_data) == 0:
             self.instrument.populate_data()
-        self._historical_data = self.instrument.historical_data
 
-        if self.instrument.interval == '1d':
+        if self.instrument.interval == 'd':
             days = int(self.duration * 252)
-        elif self.instrument.interval == '1wk':
+            self._historical_data = self.instrument.daily_historical_data
+        elif self.instrument.interval == 'w':
             days = int(self.duration * 52)
-        elif self.instrument.interval == '1mo':
+            self._historical_data = self.instrument.weekly_historical_data
+        elif self.instrument.interval == 'm':
             days = int(self.duration * 12)
+            self._historical_data = self.instrument.monthly_historical_data
 
         if len(self._historical_data) > days:
             offset = len(self._historical_data) - days
@@ -519,7 +521,7 @@ class PFChart(object):
                 i += 1
 
     def _set_price_fields(self):
-        if self.method == 'HL':
+        if self.method == 'hl':
             self._high_field = 'High'
             self._low_field = 'Low'
         else:

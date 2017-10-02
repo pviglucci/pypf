@@ -17,8 +17,10 @@ import urllib.parse
 class Instrument(object):
     """Base class for all Instruments."""
 
+    TWOPLACES = Decimal('0.01')
+
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, debug=False,
+                 interval='d', period=10, debug=False,
                  data_directory='~/.pypf/data', data_file=''):
         """Initialize the common functionality for all Instruments."""
         self._log = logging.getLogger(self.__class__.__name__)
@@ -33,7 +35,9 @@ class Instrument(object):
         self.data_file = data_file
         self.force_cache = force_cache
         self.force_download = force_download
-        self.historical_data = OrderedDict()
+        self.daily_historical_data = OrderedDict()
+        self.weekly_historical_data = OrderedDict()
+        self.monthly_historical_data = OrderedDict()
         self.interval = interval
         self.period = int(period)
         self.symbol = symbol
@@ -97,14 +101,14 @@ class Instrument(object):
 
     @property
     def interval(self):
-        """Specify day (1d), week (1wk), or month (1mo) interval."""
+        """Specify day (d), week (w), or month (m) interval."""
         return self._interval
 
     @interval.setter
     def interval(self, value):
-        if value not in ["1d", "1wk", "1mo"]:
+        if value not in ["d", "w", "m"]:
             raise ValueError("incorrect interval: "
-                             "valid intervals are 1d, 1wk, 1mo")
+                             "valid intervals are d, w, m")
         self._interval = value
         self._log.debug('set self._interval to '
                         + str(self._interval))
@@ -152,7 +156,9 @@ class Instrument(object):
         date. This behavior can be overridden with the --force-cache
         and --force-download options.
         """
-        # TODO(me): Refactor without using exceptions.
+        self.daily_historical_data = OrderedDict()
+        self.weekly_historical_data = OrderedDict()
+        self.monthly_historical_data = OrderedDict()
         download_data = False
 
         if self.force_download:
@@ -175,11 +181,19 @@ class Instrument(object):
         if download_data:
             self._log.info('downloading data for ' + self.symbol)
             self._download_data()
-            csv_file = open(self.data_path, newline='')
         else:
             self._log.info('using cached data for ' + self.symbol)
-            csv_file = open(self.data_path, newline='')
 
+        self._set_daily_data()
+
+        if self.interval == "w":
+            self._set_weekly_data()
+        elif self.interval == "m":
+            self._set_weekly_data()
+
+    def _set_daily_data(self):
+        self._log.debug('setting daily historical data')
+        csv_file = open(self.data_path, newline='')
         reader = csv.DictReader(csv_file)
         for row in reader:
             row['Open'] = Decimal(row['Open'])
@@ -187,7 +201,13 @@ class Instrument(object):
             row['Low'] = Decimal(row['Low'])
             row['Close'] = Decimal(row['Close'])
             row['Volume'] = int(row['Volume'])
-            self.historical_data[row['Date']] = row
+            self.daily_historical_data[row['Date']] = row
+
+    def _set_weekly_data(self):
+        self._log.debug('setting weekly historical data')
+
+    def _set_monthly_data(self):
+        self._log.debug('setting monthly historical data')
 
     def _download_data(self):
         """To be implemented in derived classes.
@@ -239,7 +259,7 @@ class YahooSecurity(Instrument):
                    "download/%s?period1=%s&period2=%s&interval=%s"
                    "&events=history&crumb=%s")
         url = api_url % (self.symbol, self._start_date, self._end_date,
-                         self.interval, crumb)
+                         '1d', crumb)
         self._log.info('fetching data')
         self._log.debug(url)
         data = requests.get(url, cookies={'B': cookie})
@@ -252,14 +272,20 @@ class YahooSecurity(Instrument):
                     csvfile.write("Date,Open,High,Low,Close,Volume\n")
                     first = False
                     continue
+                # Yahoo provides an Adj Close - fields[5]
+                # We use it to compute a factor to adjust the data
                 fields = row.split(',')
                 new_row = []
                 factor = Decimal(fields[5]) / Decimal(fields[4])
                 new_row.append(str(fields[0]))
-                new_row.append(str(Decimal(fields[1]) * factor))
-                new_row.append(str(Decimal(fields[2]) * factor))
-                new_row.append(str(Decimal(fields[3]) * factor))
-                new_row.append(str(Decimal(fields[4]) * factor))
+                new_row.append(str(Decimal(Decimal(fields[1]) * factor)
+                                   .quantize(Instrument.TWOPLACES)))
+                new_row.append(str(Decimal(Decimal(fields[2]) * factor)
+                                   .quantize(Instrument.TWOPLACES)))
+                new_row.append(str(Decimal(Decimal(fields[3]) * factor)
+                                   .quantize(Instrument.TWOPLACES)))
+                new_row.append(str(Decimal(Decimal(fields[4]) * factor)
+                                   .quantize(Instrument.TWOPLACES)))
                 new_row.append(str(int(fields[6])))
                 write_row = ','.join(new_row) + "\n"
                 csvfile.write(write_row)
