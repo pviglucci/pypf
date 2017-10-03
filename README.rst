@@ -42,7 +42,7 @@ To use in a program, simply do::
     from pypf.chart import PFChart
     from pypf.instrument import YahooSecurity
     i = YahooSecurity(symbol, force_download, force_cache, period, debug)
-    c = PFChart(i, box_size, duration, method, interval, reversal, style, trend_lines, debug)
+    c = PFChart(i, box_size, duration, interval, method, reversal, style, trend_lines, debug)
     c.create_chart()
     print(c.chart)
 
