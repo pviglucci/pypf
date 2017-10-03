@@ -171,7 +171,7 @@ class Instrument(object):
 
         self._set_daily_data()
         self._set_weekly_data()
-        self._set_weekly_data()
+        self._set_monthly_data()
 
     def _set_daily_data(self):
         self._log.debug('setting daily historical data')

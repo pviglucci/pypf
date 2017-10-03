@@ -52,8 +52,8 @@ To use at the command line::
 
 pf.py supports the following arguments::
 
-    usage: pf.py [-h] [-d] [--interval INTERVAL] [--force-cache]
-                 [--force-download] [--period PERIOD] [--provider PROVIDER]
+    usage: pf.py [-h] [-d] [--force-cache] [--force-download] [--period PERIOD]
+                 [--provider PROVIDER]
                  command ...
 
     positional arguments:
@@ -62,9 +62,7 @@ pf.py supports the following arguments::
 
     optional arguments:
       -h, --help           show this help message and exit
-      -d, --debug          print debug messages to stdout
-      --interval INTERVAL  specify day (1d), week (1wk), or month (1mo) interval
-                           [default: 1d]
+      -d, --debug          print debug messages to stderr
       --force-cache        force use of cached data [default: False]
       --force-download     force download of data [default: False]
       --period PERIOD      set the years of data to download [default: 10]
@@ -74,8 +72,9 @@ pf.py supports the following arguments::
 The pf command supports the following arguments::
 
     usage: pf.py pf [-h] [--box-size BOX_SIZE] [--dump-meta-data]
-                    [--duration DURATION] [--method METHOD] [--reversal REVERSAL]
-                    [--style] [--suppress-chart] [--trend-lines]
+                    [--duration DURATION] [--interval INTERVAL] [--method METHOD]
+                    [--reversal REVERSAL] [--style] [--suppress-chart]
+                    [--trend-lines]
                     SYMBOL
 
     positional arguments:
@@ -86,7 +85,9 @@ The pf command supports the following arguments::
       --box-size BOX_SIZE  set the % box size [default: 0.01]
       --dump-meta-data     print chart meta data to stdout [default: False]
       --duration DURATION  set the duration in years for the chart [default: 1]
-      --method METHOD      specify High/Low (HL) or Close (C) [default: HL]
+      --interval INTERVAL  specify day (d), week (w), or month (m) interval
+                           [default: d]
+      --method METHOD      specify High/Low (hl) or Close (c) [default: hl]
       --reversal REVERSAL  set the box reversal [default: 3]
       --style              use color and style in terminal output [default: False]
       --suppress-chart     do not print the chart to stdout [default: False]
