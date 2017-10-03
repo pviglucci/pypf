@@ -12,9 +12,9 @@ class PFChart(object):
 
     TWOPLACES = Decimal('0.01')
 
-    def __init__(self, instrument, box_size=.01, duration=1.0, method='hl',
-                 reversal=3, style=False, trend_lines=False,
-                 debug=False):
+    def __init__(self, instrument, box_size=.01, duration=1.0,
+                 interval='d', method='hl', reversal=3, style=False,
+                 trend_lines=False, debug=False):
         """Initialize common functionality."""
         self._log = logging.getLogger(self.__class__.__name__)
         if debug is True:
@@ -22,6 +22,7 @@ class PFChart(object):
             self._log.debug(self)
 
         self.instrument = instrument
+        self.interval = interval
         self.box_size = Decimal(box_size).quantize(PFChart.TWOPLACES)
         self.duration = Decimal(duration).quantize(PFChart.TWOPLACES)
         self.method = method
@@ -68,6 +69,20 @@ class PFChart(object):
     def instrument(self, value):
         self._instrument = value
         self._log.debug('set self._instrument to ' + str(self._instrument))
+
+    @property
+    def interval(self):
+        """Specify day (d), week (w), or month (m) interval."""
+        return self._interval
+
+    @interval.setter
+    def interval(self, value):
+        if value not in ["d", "w", "m"]:
+            raise ValueError("incorrect interval: "
+                             "valid intervals are d, w, m")
+        self._interval = value
+        self._log.debug('set self._interval to '
+                        + str(self._interval))
 
     @property
     def method(self):
@@ -503,13 +518,13 @@ class PFChart(object):
         if len(self.instrument.daily_historical_data) == 0:
             self.instrument.populate_data()
 
-        if self.instrument.interval == 'd':
+        if self.interval == 'd':
             days = int(self.duration * 252)
             self._historical_data = self.instrument.daily_historical_data
-        elif self.instrument.interval == 'w':
+        elif self.interval == 'w':
             days = int(self.duration * 52)
             self._historical_data = self.instrument.weekly_historical_data
-        elif self.instrument.interval == 'm':
+        elif self.interval == 'm':
             days = int(self.duration * 12)
             self._historical_data = self.instrument.monthly_historical_data
 

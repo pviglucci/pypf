@@ -20,8 +20,8 @@ class Instrument(object):
     TWOPLACES = Decimal('0.01')
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='d', period=10, debug=False,
-                 data_directory='~/.pypf/data', data_file=''):
+                 period=10, debug=False, data_directory='~/.pypf/data',
+                 data_file=''):
         """Initialize the common functionality for all Instruments."""
         self._log = logging.getLogger(self.__class__.__name__)
         if debug is True:
@@ -38,7 +38,6 @@ class Instrument(object):
         self.daily_historical_data = OrderedDict()
         self.weekly_historical_data = OrderedDict()
         self.monthly_historical_data = OrderedDict()
-        self.interval = interval
         self.period = int(period)
         self.symbol = symbol
 
@@ -98,20 +97,6 @@ class Instrument(object):
         self._force_download = value
         self._log.debug('set self._force_download to '
                         + str(self._force_download))
-
-    @property
-    def interval(self):
-        """Specify day (d), week (w), or month (m) interval."""
-        return self._interval
-
-    @interval.setter
-    def interval(self, value):
-        if value not in ["d", "w", "m"]:
-            raise ValueError("incorrect interval: "
-                             "valid intervals are d, w, m")
-        self._interval = value
-        self._log.debug('set self._interval to '
-                        + str(self._interval))
 
     @property
     def period(self):
@@ -185,11 +170,8 @@ class Instrument(object):
             self._log.info('using cached data for ' + self.symbol)
 
         self._set_daily_data()
-
-        if self.interval == "w":
-            self._set_weekly_data()
-        elif self.interval == "m":
-            self._set_weekly_data()
+        self._set_weekly_data()
+        self._set_weekly_data()
 
     def _set_daily_data(self):
         self._log.debug('setting daily historical data')
@@ -224,11 +206,10 @@ class YahooSecurity(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, debug=False,
-                 data_directory='~/.pypf/data'):
+                 period=10, debug=False, data_directory='~/.pypf/data'):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
-                         interval, period, debug, data_directory)
+                         period, debug, data_directory)
         self._log.info('formatting symbol for yahoo')
         self.symbol = self.symbol.replace('.', '-')
         self.data_file = (self.symbol
@@ -296,11 +277,10 @@ class GoogleSecurity(Instrument):
     """Security instrument that uses Yahoo as the datasource."""
 
     def __init__(self, symbol, force_download=False, force_cache=False,
-                 interval='1d', period=10, debug=False,
-                 data_directory='~/.pypf/data'):
+                 period=10, debug=False, data_directory='~/.pypf/data'):
         """Initialize the security."""
         super().__init__(symbol, force_download, force_cache,
-                         interval, period, debug, data_directory)
+                         period, debug, data_directory)
 
         self.data_file = (self.symbol
                           + '_google'

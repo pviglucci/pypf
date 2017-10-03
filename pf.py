@@ -18,13 +18,6 @@ def __get_option_parser():
     parser.add_argument("-d", "--debug",
                         action="store_true", dest="debug",
                         help="print debug messages to stderr")
-    parser.add_argument("--interval",
-                        action="store",
-                        dest="interval",
-                        choices=['d', 'w', 'm'], default='d',
-                        metavar="INTERVAL",
-                        help="specify day (1d), week (1wk), or month (1mo) \
-                             interval [default: %(default)s]")
     parser.add_argument("--force-cache",
                         action="store_true", dest="force_cache",
                         help="force use of cached data [default: False]")
@@ -67,6 +60,13 @@ def __get_option_parser():
                            metavar="DURATION",
                            help="set the duration in years for the chart \
                                  [default: %(default)s]")
+    pf_parser.add_argument("--interval",
+                           action="store",
+                           dest="interval",
+                           choices=['d', 'w', 'm'], default='d',
+                           metavar="INTERVAL",
+                           help="specify day (d), week (w), or month (m) \
+                                 interval [default: %(default)s]")
     pf_parser.add_argument("--method",
                            action="store",
                            dest="method",
@@ -114,11 +114,11 @@ def __process_options(options):
 
     if options.provider == 'google':
         security = GoogleSecurity(symbol, force_download, force_cache,
-                                  interval, period, debug)
+                                  period, debug)
     else:
         security = YahooSecurity(symbol, force_download, force_cache,
-                                 interval, period, debug)
-    chart = PFChart(security, box_size, duration, method,
+                                 period, debug)
+    chart = PFChart(security, box_size, duration, interval, method,
                     reversal, style, trend_lines, debug)
     chart.create_chart()
     if options.suppress_chart is False:
