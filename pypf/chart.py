@@ -564,7 +564,7 @@ class PFChart(object):
         current = Decimal(.01)
         temp_scale.append(current)
 
-        while current < highest:
+        while current <= highest:
             value = current + (current * self.box_size)
             temp_scale.append(value)
             current = value
@@ -578,7 +578,7 @@ class PFChart(object):
 
         self._scale = OrderedDict()
         for index, scale_value in enumerate(temp_scale):
-            self._scale[index] = scale_value
+            self._scale[index] = scale_value.quantize(PFChart.TWOPLACES)
 
     def _store_base_metadata(self, day, signal, status, action, move,
                              column_index, scale_index, scale_value,

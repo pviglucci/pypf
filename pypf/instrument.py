@@ -178,10 +178,10 @@ class Instrument(object):
         csv_file = open(self.data_path, newline='')
         reader = csv.DictReader(csv_file)
         for row in reader:
-            row['Open'] = Decimal(row['Open'])
-            row['High'] = Decimal(row['High'])
-            row['Low'] = Decimal(row['Low'])
-            row['Close'] = Decimal(row['Close'])
+            row['Open'] = Decimal(row['Open']).quantize(Instrument.TWOPLACES)
+            row['High'] = Decimal(row['High']).quantize(Instrument.TWOPLACES)
+            row['Low'] = Decimal(row['Low']).quantize(Instrument.TWOPLACES)
+            row['Close'] = Decimal(row['Close']).quantize(Instrument.TWOPLACES)
             row['Volume'] = int(row['Volume'])
             self.daily_historical_data[row['Date']] = row
 
@@ -259,13 +259,13 @@ class YahooSecurity(Instrument):
                 new_row = []
                 factor = Decimal(fields[5]) / Decimal(fields[4])
                 new_row.append(str(fields[0]))
-                new_row.append(str(Decimal(Decimal(fields[1]) * factor)
+                new_row.append(str((Decimal(fields[1]) * factor)
                                    .quantize(Instrument.TWOPLACES)))
-                new_row.append(str(Decimal(Decimal(fields[2]) * factor)
+                new_row.append(str((Decimal(fields[2]) * factor)
                                    .quantize(Instrument.TWOPLACES)))
-                new_row.append(str(Decimal(Decimal(fields[3]) * factor)
+                new_row.append(str((Decimal(fields[3]) * factor)
                                    .quantize(Instrument.TWOPLACES)))
-                new_row.append(str(Decimal(Decimal(fields[4]) * factor)
+                new_row.append(str((Decimal(fields[4]) * factor)
                                    .quantize(Instrument.TWOPLACES)))
                 new_row.append(str(int(fields[6])))
                 write_row = ','.join(new_row) + "\n"
