@@ -79,6 +79,16 @@ def __get_option_parser():
                            type=int, default=3,
                            metavar="REVERSAL",
                            help="set the box reversal [default: %(default)s]")
+    pf_parser.add_argument("--indent",
+                           action="store", dest="indent",
+                           type=int, default=3,
+                           metavar="INDENT",
+                           help="set the indent of the chart [default: %(default)s]")
+    pf_parser.add_argument("--truncate",
+                           action="store", dest="truncate",
+                           type=int, default=50,
+                           metavar="TRUNCATE",
+                           help="truncate the chart to fixed number of columns [default: %(default)s]")
     pf_parser.add_argument("--style",
                            action="store_true", dest="style",
                            help="use color and style in terminal output \
@@ -111,6 +121,8 @@ def __process_options(options):
     style = options.style
     trend_lines = options.trend_lines
     symbol = options.symbol
+    indent = options.indent
+    truncate = options.truncate
 
     if options.provider == 'google':
         security = GoogleSecurity(symbol, force_download, force_cache,
@@ -119,7 +131,7 @@ def __process_options(options):
         security = YahooSecurity(symbol, force_download, force_cache,
                                  period, debug)
     chart = PFChart(security, box_size, duration, interval, method,
-                    reversal, style, trend_lines, debug)
+                    reversal, style, trend_lines, debug, indent, truncate)
     chart.create_chart()
     if options.suppress_chart is False:
         print(chart.chart)

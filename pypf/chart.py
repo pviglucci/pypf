@@ -14,7 +14,7 @@ class PFChart(object):
 
     def __init__(self, instrument, box_size=.01, duration=1.0,
                  interval='d', method='hl', reversal=3, style=False,
-                 trend_lines=False, debug=False):
+                 trend_lines=False, debug=False, indent=0, truncate=0):
         """Initialize common functionality."""
         self._log = logging.getLogger(self.__class__.__name__)
         if debug is True:
@@ -29,6 +29,28 @@ class PFChart(object):
         self.reversal = int(reversal)
         self.style_output = style
         self.trend_lines = trend_lines
+        self.indent = indent
+        self.truncate = truncate
+
+    @property
+    def indent(self):
+        """Get the box_size."""
+        return "".rjust(self._indent)
+
+    @indent.setter
+    def indent(self, value):
+        self._indent = value
+        self._log.debug('set self._indent to ' + str(value))
+
+    @property
+    def truncate(self):
+        """Get the box_size."""
+        return self._truncate
+
+    @truncate.setter
+    def truncate(self, value):
+        self._truncate = value
+        self._log.debug('set self._truncate to ' + str(self._truncate))
 
     @property
     def box_size(self):
@@ -135,70 +157,87 @@ class PFChart(object):
         self._set_scale()
         self._set_chart_data()
         self._chart = self._get_chart()
-
+    
     def _get_chart(self):
         self._set_current_state()
         chart = ""
         chart += "\n"
         chart += self._get_chart_title()
-
+        
         index = len(self._chart_data[0]) - 1
-        first = True
+        if self.truncate > 0:            
+            first_column = self._chart_data.pop(0)
+            self._chart_data = self._chart_data[-self.truncate:]
+            self._chart_data.insert(0,first_column)
+        
         scale_right = None
+        self._log.info(len(self._chart_data))
         while index >= 0:
-            for column in self._chart_data:
-                if index in column:
-                    if first:
-                        scale_value = column[index]
-                        if index == self._current_scale_index:
-                            scale_left = (self._style('red',
-                                          self._style('bold', '{:7.2f}'))
-                                          .format(scale_value))
-                            scale_right = (self._style('red',
-                                           self._style('bold', '<< '))
-                                           + self._style('red',
-                                                         self._style('bold',
-                                                                     '{:.2f}'))
-                                           .format(self._current_close))
-                        else:
-                            scale_left = '{:7.2f}'.format(scale_value)
-                            scale_right = '{:.2f}'.format(scale_value)
-                        chart = chart + scale_left + '| '
-                        first = False
-                    else:
-                        chart = chart + ' ' + column[index][0]
-                else:
-                    chart += '  '
-
-            chart += '   |' + scale_right
-            chart += "\n"
-            index -= 1
+            found = False
             first = True
+            for column in self._chart_data:
+                    if first:
+                        first = False
+                        continue
+                    if index in column:
+                        found = True             
+                        break
+            if found:
+                first = True
+                for column in self._chart_data:
+                    if index in column:
+                        if first:
+                            scale_value = column[index]
+                            if index == self._current_scale_index:
+                                scale_left = (self._style('red',
+                                              self._style('bold', '{:7.2f}'))
+                                              .format(scale_value))
+                                scale_right = (self._style('red',
+                                               self._style('bold', '<< '))
+                                               + self._style('red',
+                                                             self._style('bold',
+                                                                         '{:.2f}'))
+                                               .format(self._current_close))
+                            else:
+                                scale_left = '{:7.2f}'.format(scale_value)
+                                scale_right = '{:.2f}'.format(scale_value)
+                            chart = chart + self.indent + scale_left + '| '
+                            first = False
+                        else:
+                            chart = chart + ' ' + column[index][0]
+                    else:
+                        chart += '  '
+                
+                chart += '   |' + scale_right
+                chart += "\n"
+                
+            index -= 1
         return chart
 
     def _get_chart_title(self):
         self._set_current_prices()
-        title = ""
-        title = title + "  " + self._style('bold',
+        title = self.indent
+        title = title + self._style('bold',
                                            self._style('underline',
                                                        self.instrument.symbol))
-        title = (title
-                 + "  ({:} o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
-                 .format(self._current_date, self._current_open,
+        title = (title + ' '
+                 + "(" + self._style('bold', str(self.instrument.download_timestamp.strftime("%a %b %d, %Y %H:%M:%S"))) + ")\n")
+        
+        title = (title + self.indent 
+                 + "o: {:.2f} h: {:.2f} l: {:.2f} c: {:.2f}"
+                 .format(self._current_open,
                          self._current_high, self._current_low,
-                         self._current_close)
-                 + ")\n")
-
-        title = (title
-                 + "  "
-                 + str((self.box_size * 100).quantize(PFChart.TWOPLACES))
-                 + "% box, ")
-        title = title + str(self.reversal) + " box reversal, "
-        title = title + str(self.method) + " method\n"
-        title = (title
-                 + "  signal: "
+                         self._current_close) 
+                 + "\n")         
+        title = (title + self.indent
+                 + "box: "
+                 + str((self.box_size * 100).quantize(PFChart.TWOPLACES)))
+        title = title + ", reversal: " + str(self.reversal)
+        title = title + ", method: " + str(self.method) + "\n"
+        title = (title + self.indent
+                 + "signal: "
                  + self._style('bold', self._current_signal)
-                 + " status: " + self._style('bold', self._current_status)
+                 + ", status: " + self._style('bold', self._current_status)
                  + "\n\n")
         return title
 

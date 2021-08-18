@@ -89,6 +89,8 @@ The pf command supports the following arguments::
                            [default: d]
       --method METHOD      specify High/Low (hl) or Close (c) [default: hl]
       --reversal REVERSAL  set the box reversal [default: 3]
+      --indent INDENT      set the indent of the chart [default: 3]
+      --truncate TRUNCATE  truncate the chart to fixed number of columns [default: 50]
       --style              use color and style in terminal output [default: False]
       --suppress-chart     do not print the chart to stdout [default: False]
       --trend-lines        draw support and resistance lines [default: False]
@@ -96,7 +98,7 @@ The pf command supports the following arguments::
 License
 -------
 
-Copyright (c) 2017 Peter J. Viglucci
+Copyright (c) 2021 Peter J. Viglucci
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

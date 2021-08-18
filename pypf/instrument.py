@@ -77,6 +77,12 @@ class Instrument(object):
         return self._data_path
 
     @property
+    def download_timestamp(self):
+        """Get the datetime the data was last downloaded"""
+        modification_time = os.path.getmtime(self.data_path)
+        return datetime.datetime.fromtimestamp(modification_time)
+
+    @property
     def force_cache(self):
         """Force use of cached data."""
         return self._force_cache
@@ -155,7 +161,13 @@ class Instrument(object):
                                       .fromtimestamp(modification_time))
                 today = datetime.datetime.now().date()
 
+                last_modified_time = datetime.datetime.fromtimestamp(modification_time)
+                now = datetime.datetime.now()
+                fourpm = now.replace(hour=16, minute=0, second=0, microsecond=0)
+
                 if last_modified_date != today:
+                    download_data = True
+                elif last_modified_date == today and last_modified_time < fourpm and now > fourpm:
                     download_data = True
             else:
                 download_data = True
