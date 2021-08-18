@@ -221,7 +221,7 @@ class YahooSecurity(Instrument):
         self._log.info('getting cookie and crumb')
         url = 'https://finance.yahoo.com/quote/%s/history' % (self.symbol)
         self._log.debug(url)
-        r = requests.get(url)
+        r = requests.get(url, headers={'User-agent': 'Mozilla/5.0'})
         txt = r.content
         cookie = r.cookies['B']
         pattern = re.compile('.*"CrumbStore":\{"crumb":"(?P<crumb>[^"]+)"\}')
@@ -243,7 +243,7 @@ class YahooSecurity(Instrument):
                          '1d', crumb)
         self._log.info('fetching data')
         self._log.debug(url)
-        data = requests.get(url, cookies={'B': cookie})
+        data = requests.get(url, headers={'User-agent': 'Mozilla/5.0'}, cookies={'B': cookie})
         content = StringIO(data.content.decode("utf-8"))
         self._log.info('saving data to ' + self.data_path)
         with open(self.data_path, 'w', newline='') as csvfile:
